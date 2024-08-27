@@ -3,10 +3,20 @@ import { StyleSheet, Text, View } from 'react-native'
 import { SplashScreen, Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
+import { ApolloClient, InMemoryCache, ApolloProvider, gql } from '@apollo/client';
 
 import GlobalProvider from '../context/GlobalProvider';
 
 SplashScreen.preventAutoHideAsync();
+
+const client = new ApolloClient({
+  uri: 'https://hsinhkamhsai.us-east-a.ibm.stepzen.net/api/hoping-sheep/__graphql',
+  cache: new InMemoryCache(),
+  headers:{
+    Authorization : 
+      'apikey hsinhkamhsai::local.net+1000::e0b4d67d4eb1f34c9854a50b49c5db3cec88f3629a198729a800aac38f4d080e'
+  }
+});
 
 const RootLayout = () => {
   const [fontsLoaded, error] = useFonts({
@@ -30,11 +40,13 @@ const RootLayout = () => {
 
   return (
     <GlobalProvider>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-      </Stack>
+      <ApolloProvider client={client}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+        </Stack>
+      </ApolloProvider>
     </GlobalProvider>
   );
 };
