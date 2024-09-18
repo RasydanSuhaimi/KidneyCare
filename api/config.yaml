@@ -1,5 +1,8 @@
 configurationset:
   - configuration:
+      name: postgresql_config
+      uri: postgresql://ep-icy-unit-a17wadw4.ap-southeast-1.aws.neon.tech/kidneycare?user=kidneycare_owner&password=QamOUo9tP6MB
+  - configuration:
       name: edamam
       app_id: 08be2c96
       app_key: 07341670f1b8e5741bfd74bf08b67f52

@@ -1,0 +1,15 @@
+import { View, Text } from "react-native";
+import React from "react";
+
+const FoodLogListItem = ({ item }) => {
+  return (
+    <View className="bg-white p-2 flex-row justify-between items-center rounded-lg border border-gray-300">
+      <View className="flex-1 space-y-2">
+        <Text style={{ fontSize: 16, fontWeight: "bold" }}>{item.label}</Text>
+        <Text className="text-gray-500">{item.kcal} cal</Text>
+      </View>
+    </View>
+  );
+};
+
+export default FoodLogListItem;

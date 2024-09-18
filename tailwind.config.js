@@ -31,6 +31,10 @@ module.exports = {
         pextrabold: ["Poppins-ExtraBold", "sans-serif"],
         pblack: ["Poppins-Black", "sans-serif"],
       },
+
+      fontSize: {
+        '100': '18px', // Define a custom size
+      },
     },
   },
   plugins: [],
