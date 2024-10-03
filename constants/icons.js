@@ -14,6 +14,7 @@ import play from "../assets/icons/play.png";
 import insight from "../assets/icons/insight.png";
 import recommend from "../assets/icons/recommend.png";
 import journal from "../assets/icons/journal.png";
+import google from "../assets/icons/google.png";
 
 export default {
   play,
@@ -32,4 +33,5 @@ export default {
   insight,
   recommend,
   journal,
+  google,
 };

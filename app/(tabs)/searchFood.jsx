@@ -21,7 +21,6 @@ const query = gql`
       text
       hints {
         food {
-          brand
           foodId
           label
           nutrients {
@@ -71,22 +70,19 @@ const SearchScreen = () => {
   };
 
   return (
-    <SafeAreaView className="bg-white h-full">
+    <SafeAreaView className="bg-gray-300 flex-1">
       <View className="flex-1 justify-center px-3 space-y-7">
-        <SearchInput value={search} onChangeText={setSearch} />
-
-        {search && (
-          <CustomButton
-            title="Search"
-            containerStyles="mt-3"
-            handlePress={performSearch}
-          />
-        )}
+        <SearchInput
+          value={search}
+          onChangeText={setSearch}
+          onSubmitEditing={performSearch}
+        />
 
         {loading && <ActivityIndicator />}
         <FlatList
           data={items}
-          contentContainerStyle={{ gap: 7 }}
+          contentContainerStyle={{ paddingHorizontal: 8, gap: 13, paddingBottom: 70 }}
+          style={{ margin: 0 }}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={() => (
             <View className="flex-1 justify-center items-center font-pmedium">

@@ -1,66 +1,133 @@
-import { StatusBar } from 'expo-status-bar';
-import { ScrollView, Text, View, Image, Alert } from 'react-native'
-import React, { useState } from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { Link, router } from 'expo-router';
+import { StatusBar } from "expo-status-bar";
+import {
+  ScrollView,
+  Text,
+  View,
+  Image,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
+import React, { useState } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Link, useRouter } from "expo-router";
+import { gql, useMutation, useLazyQuery } from "@apollo/client";
 
-import { images } from '../../constants';
-import FormField from '../../components/FormField';
-import CustomButton from '../../components/CustomButton';
-import { createUser } from '../../lib/appwrite';
+import { images } from "../../constants";
+import FormField from "../../components/FormField";
+import CustomButton from "../../components/CustomButton";
+//import { createUser, signIn } from "../../lib/appwrite";
+//import OAuth from "../../components/OAuth";
 
+// GraphQL Mutation for signing up a user
+const SIGNUP_MUTATION = gql`
+  mutation SignUpUser($username: String!, $email: String!, $password: String!) {
+    insert_users(username: $username, email: $email, password: $password) {
+      user_id
+      username
+      email
+    }
+  }
+`;
+
+// GraphQL Query to check if username exists
+const CHECK_USERNAME_QUERY = gql`
+  query CheckUsername($username: String!) {
+    checkUsername(username: $username) {
+      username
+      email
+    }
+  }
+`;
 
 const SignUp = () => {
-
   const [form, setForm] = useState({
-    username: '',
-    email: '',
-    password: '',
-  })
+    username: "",
+    email: "",
+    password: "",
+  });
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
-  const submit = async () =>{
-    if(form.username === "" || form.email  === "" || form.password  === ""){
-      Alert.alert('Error', 'Please fill in all the fields')
-    }
+  // Apollo's useMutation hook for signing up a user
+  const [signUpUser] = useMutation(SIGNUP_MUTATION);
 
+  // Apollo's useLazyQuery hook for checking if the username exists
+  const [checkUsername, { data: usernameCheckData, error: usernameCheckError }] = useLazyQuery(CHECK_USERNAME_QUERY);
+
+  const submit = async () => {
     setIsSubmitting(true);
 
-    try {
-      const result = await createUser(form.email, form.password, form.username);
-      setUser(result);
-      setIsLogged(true);
+    // Form validation
+    if (!form.username || !form.email || !form.password) {
+      Alert.alert("Error", "All fields are required.");
+      setIsSubmitting(false);
+      return;
+    }
 
-      router.replace("/home")
+    try {
+      // Check if username is taken
+      const { data } = await checkUsername({
+        variables: { username: form.username },
+      });
+
+      if (data && data.checkUsername) {
+        Alert.alert("Error", "Username already taken.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Execute the GraphQL mutation for sign up
+      const { data: signUpData } = await signUpUser({
+        variables: {
+          username: form.username,
+          email: form.email,
+          password: form.password,
+        },
+      });
+
+      // Success feedback
+      Alert.alert("Success", "User created successfully!");
+
+      // Redirect to sign-in page
+      router.push("/sign-in");
     } catch (error) {
-      Alert.alert('Error', error.message)
-    }finally{
-      setIsSubmitting(false)
+      // Handle query error for checkUsername
+      if (usernameCheckError) {
+        Alert.alert("Error", usernameCheckError.message || "Something went wrong.");
+      } else {
+        Alert.alert("Error", error.message || "Something went wrong.");
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <SafeAreaView className="bg-primary h-full">
+    <SafeAreaView className="bg-gray-300 h-full">
       <ScrollView>
         <View className="w-full justify-center min-h-[70vh] px-4 my-6">
-          <Image source={images.logo} resizeMode='contain' className='w-[115px] h-[35px]'/>
+          <Image
+            source={images.logo}
+            resizeMode="contain"
+            className="w-[115px] h-[35px]"
+          />
 
-          <Text className="text-2xl text-black text-semibold mt-10 font-psemibold">Sign up to KidneyCare</Text>
+          <Text className="text-2xl text-black text-semibold mt-10 font-psemibold">
+            Sign up to KidneyCare
+          </Text>
 
           <FormField
             title="Username"
             value={form.username}
-            handleChangeText={(e) => setForm({...form,
-              username: e })}
+            handleChangeText={(e) => setForm({ ...form, username: e })}
             otherStyles="mt-10"
           />
 
           <FormField
             title="Email"
             value={form.email}
-            handleChangeText={(e) => setForm({...form,
-              email: e })}
+            handleChangeText={(e) => setForm({ ...form, email: e })}
             otherStyles="mt-7"
             keyboardType="email-address"
           />
@@ -68,33 +135,55 @@ const SignUp = () => {
           <FormField
             title="Password"
             value={form.password}
-            handleChangeText={(e) => setForm({...form,
-              password: e })}
+            handleChangeText={(e) => setForm({ ...form, password: e })}
             otherStyles="mt-7"
           />
 
           <CustomButton
-          title="Sign Up"
-          handlePress={submit}
-          containerStyles="mt-7"
-          isLoading={isSubmitting}
+            title="Sign Up"
+            handlePress={submit}
+            containerStyles="mt-7"
+            isLoading={isSubmitting}
           />
+
+          {/* Show loading indicator */}
+          {isSubmitting && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#0000ff" />
+            </View>
+          )}
 
           <View className="justify-center pt-5 flex-row gap-2">
             <Text className="text-lg text-black font-pregular">
               Have account?
             </Text>
-            <Link href="/sign-in" className='text-lg text-secondary font-psemibold'>Sign In</Link>
+            <Link
+              href="/sign-in"
+              className="text-lg text-secondary font-psemibold"
+            >
+              Sign In
+            </Link>
           </View>
-
         </View>
       </ScrollView>
 
-      <StatusBar backgroundColor='#161622'
-      style='dark'/>
-
+      <StatusBar backgroundColor="#161622" style="dark" />
     </SafeAreaView>
-  )
-}
+  );
+};
 
-export default SignUp
+const styles = {
+  loadingContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "gray-300",
+    zIndex: 10,
+  },
+};
+
+export default SignUp;

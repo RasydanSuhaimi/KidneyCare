@@ -56,7 +56,7 @@ const addFood = () => {
       <Text>Calories: {kcal}</Text>
 
       <Button title="Add Food" onPress={onPlusPressed} />
-      <Button title="Go Back" onPress={() => navigation.goBack()} />
+      <Button title="Go Back" onPress={() => router.back()} />
     </View>
   );
 };

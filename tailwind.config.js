@@ -18,6 +18,7 @@ module.exports = {
         gray: {
           100: "#808080",
           200: "#d3d3d3",
+          300: "#f8f8fa",
         },
       },
       fontFamily: {
@@ -33,7 +34,7 @@ module.exports = {
       },
 
       fontSize: {
-        '100': '18px', // Define a custom size
+        100: "18px", // Define a custom size
       },
     },
   },

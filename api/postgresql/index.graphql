@@ -1,3 +1,6 @@
+# Import your custom resolver
+#import "resolvers/authHandler.js"
+
 type Food_log {
   created_at: Date
   food_id: String
@@ -5,6 +8,18 @@ type Food_log {
   kcal: Int
   label: String
   user_id: String
+}
+
+type Users {
+  user_id: String!
+  username: String
+  email: String
+  password: String
+  token: String
+}
+
+type Mutation {
+  insert_User(username: String!, email: String!, password: String!): Users
 }
 
 """
@@ -51,6 +66,22 @@ type Query {
       """
       configuration: "postgresql_config"
     )
+
+  signIn(email: String!, password: String!): Users
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "users"
+      configuration: "postgresql_config"
+    )
+
+  checkUsername(username: String!): Users
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "users"
+      configuration: "postgresql_config"
+    )
 }
 
 """
@@ -84,6 +115,15 @@ type Mutation {
       type: "postgresql"
       schema: "public"
       table: "food_log"
+      dml: INSERT
+      configuration: "postgresql_config"
+    )
+
+  insert_users(username: String!, email: String!, password: String!): Users
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "users"
       dml: INSERT
       configuration: "postgresql_config"
     )
