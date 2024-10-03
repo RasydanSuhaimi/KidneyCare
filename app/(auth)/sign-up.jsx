@@ -15,8 +15,6 @@ import { gql, useMutation, useLazyQuery } from "@apollo/client";
 import { images } from "../../constants";
 import FormField from "../../components/FormField";
 import CustomButton from "../../components/CustomButton";
-//import { createUser, signIn } from "../../lib/appwrite";
-//import OAuth from "../../components/OAuth";
 
 // GraphQL Mutation for signing up a user
 const SIGNUP_MUTATION = gql`
@@ -30,10 +28,12 @@ const SIGNUP_MUTATION = gql`
 `;
 
 // GraphQL Query to check if username exists
-const CHECK_USERNAME_QUERY = gql`
-  query CheckUsername($username: String!) {
+const CHECK_USERNAME_AND_EMAIL_QUERY = gql`
+  query CheckUsernameAndEmail($username: String!, $email: String!) {
     checkUsername(username: $username) {
       username
+    }
+    checkEmail(email: $email) {
       email
     }
   }
@@ -53,7 +53,8 @@ const SignUp = () => {
   const [signUpUser] = useMutation(SIGNUP_MUTATION);
 
   // Apollo's useLazyQuery hook for checking if the username exists
-  const [checkUsername, { data: usernameCheckData, error: usernameCheckError }] = useLazyQuery(CHECK_USERNAME_QUERY);
+  const [checkUsernameAndEmail, { data: checkData, error: checkError }] =
+    useLazyQuery(CHECK_USERNAME_AND_EMAIL_QUERY);
 
   const submit = async () => {
     setIsSubmitting(true);
@@ -65,14 +66,35 @@ const SignUp = () => {
       return;
     }
 
+    // Email validation (simple regex)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      Alert.alert("Error", "Please enter a valid email address.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Password length validation
+    if (form.password.length < 8) {
+      Alert.alert("Error", "Password must be at least 8 characters long.");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      // Check if username is taken
-      const { data } = await checkUsername({
-        variables: { username: form.username },
+      // Check if username or email is taken
+      const { data } = await checkUsernameAndEmail({
+        variables: { username: form.username, email: form.email },
       });
 
-      if (data && data.checkUsername) {
+      if (data?.checkUsername) {
         Alert.alert("Error", "Username already taken.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (data?.checkEmail) {
+        Alert.alert("Error", "Email already taken.");
         setIsSubmitting(false);
         return;
       }
@@ -94,7 +116,10 @@ const SignUp = () => {
     } catch (error) {
       // Handle query error for checkUsername
       if (usernameCheckError) {
-        Alert.alert("Error", usernameCheckError.message || "Something went wrong.");
+        Alert.alert(
+          "Error",
+          usernameCheckError.message || "Something went wrong."
+        );
       } else {
         Alert.alert("Error", error.message || "Something went wrong.");
       }

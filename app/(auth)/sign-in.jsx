@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StatusBar } from "expo-status-bar";
 import {
   ScrollView,
@@ -7,7 +8,7 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, router } from "expo-router";
 
@@ -16,6 +17,16 @@ import FormField from "../../components/FormField";
 import CustomButton from "../../components/CustomButton";
 import { gql, useLazyQuery } from "@apollo/client";
 
+const SIGN_IN = gql`
+  query SignIn($email: String!, $password: String!) {
+    signIn(email: $email, password: $password) {
+      user_id
+      username
+      email
+    }
+  }
+`;
+
 const SignIn = () => {
   const [form, setForm] = useState({
     email: "",
@@ -23,17 +34,19 @@ const SignIn = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const SIGN_IN = gql`
-    query SignIn($email: String!, $password: String!) {
-      signIn(email: $email, password: $password) {
-        user_id
-        username
-        email
-      }
-    }
-  `;
-
   const [signInUser] = useLazyQuery(SIGN_IN);
+
+  // Check if user is already logged in by verifying if user ID is stored in AsyncStorage
+  useEffect(() => {
+    const checkUserSession = async () => {
+      const userId = await AsyncStorage.getItem("user_id");
+      if (userId) {
+        // User is logged in, redirect to the home screen
+        router.replace("/(tabs)/home");
+      }
+    };
+    checkUserSession();
+  }, []);
 
   const submit = async () => {
     setIsSubmitting(true);
@@ -41,8 +54,14 @@ const SignIn = () => {
       const { data } = await signInUser({
         variables: { email: form.email, password: form.password },
       });
+
       if (data && data.signIn) {
         console.log("Sign-in successful:", data.signIn);
+        
+        // Store user_id in AsyncStorage
+        await AsyncStorage.setItem("user_id", data.signIn.user_id);
+        
+        // Navigate to home screen after successful login
         router.replace("/(tabs)/home");
       } else {
         Alert.alert("Error", "Invalid email or password");
@@ -56,7 +75,7 @@ const SignIn = () => {
   };
 
   return (
-    <SafeAreaView className="bg-primary h-full">
+    <SafeAreaView className="bg-gray-300 h-full">
       <ScrollView>
         <View className="w-full justify-center min-h-[70vh] px-4 my-6">
           <Image
@@ -100,7 +119,7 @@ const SignIn = () => {
 
           <View className="justify-center pt-5 flex-row gap-2">
             <Text className="text-lg text-black font-pregular">
-              Don't have account?
+              Don't have an account?
             </Text>
             <Link
               href="/sign-up"
@@ -126,7 +145,7 @@ const styles = {
     bottom: 0,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.7)", // Adjust color and opacity as needed
+    backgroundColor: "gray-300", // Adjust color and opacity as needed
     zIndex: 10,
   },
 };

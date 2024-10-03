@@ -82,6 +82,14 @@ type Query {
       table: "users"
       configuration: "postgresql_config"
     )
+
+  checkEmail(email: String!): Users
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "users"
+      configuration: "postgresql_config"
+    )
 }
 
 """

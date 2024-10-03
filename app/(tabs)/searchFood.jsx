@@ -12,7 +12,6 @@ import { useRouter } from "expo-router";
 
 import FoodListItem from "../../components/FoodListItem";
 import SearchInput from "../../components/SearchInput";
-import CustomButton from "@/components/CustomButton";
 import { gql, useLazyQuery } from "@apollo/client";
 
 const query = gql`

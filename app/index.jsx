@@ -1,19 +1,28 @@
 import { StatusBar } from "expo-status-bar";
+import React, { useEffect } from "react";
 import { ScrollView, Text, View, Image } from "react-native";
 import { Redirect, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
 
 import { images } from "../constants";
 import CustomButton from "../components/CustomButton";
-import { useGlobalContext } from "../context/GlobalProvider";
 
 export default function App() {
-  //const { isLoading, isLoggedIn } = useGlobalContext();
+  useEffect(() => {
+    const checkUserSession = async () => {
+      const userId = await AsyncStorage.getItem("user_id");
+      if (userId) {
+        // User is already logged in, redirect to home
+        router.replace("/(tabs)/home"); // Update to your home page route
+      }
+    };
 
-  //if (!isLoading && isLoggedIn) return <Redirect href="/home" />;
+    checkUserSession();
+  }, []);
 
   return (
-    <SafeAreaView className="bg-primary h-full">
+    <SafeAreaView className="bg-gray-300 h-full">
       <ScrollView contentContainerStyle={{ height: "100%" }}>
         <View className="w-full justify-center items-center min-h-[80vh] px-4">
           <Image
