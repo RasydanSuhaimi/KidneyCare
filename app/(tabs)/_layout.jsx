@@ -1,28 +1,34 @@
-import { Text, View, Image, TouchableOpacity } from "react-native";
+import { Text, TouchableOpacity } from "react-native";
 import { Tabs, useRouter } from "expo-router";
-import { icons } from "../../constants";
+import AntDesign from "react-native-vector-icons/AntDesign"; // Import AntDesign icons
+import Entypo from "react-native-vector-icons/Entypo"; // Import Entypo icons
 
-const TabIcon = ({ icon, color, name, focused, onPress }) => {
-  const iconSize = name === "" ? 65 : 24; // Adjust size for "searchFood" icon
+// Modify TabIcon to accept both AntDesign and Entypo
+const TabIcon = ({ iconSet, iconName, color, name, focused, onPress }) => {
+  const iconSize = name === "" ? 70 : 25; // Larger size for SearchFood icon
 
   return (
     <TouchableOpacity
       onPress={onPress}
-      className="items-center gap-2 top-2"
+      className="items-center gap-2"
+      style={name === "" ? { transform: [{ translateY: -15 }] } : {}} // Lift SearchFood icon
     >
-      <Image
-        source={icon}
-        resizeMode="contain"
-        tintColor={color}
-        className="W-6 h-6"
-        style={{ width: iconSize, height: iconSize, marginTop: 40}} // Move the icon down
-      />
-      <Text
-        className={`${focused ? "font-psemibold" : "font-pregular"} text-xs`}
-        style={{ color: color }}
-      >
-        {name}
-      </Text>
+      {/* Conditionally render the icon based on the iconSet prop */}
+      {iconSet === "AntDesign" ? (
+        <AntDesign name={iconName} size={iconSize} color={color} />
+      ) : (
+        <Entypo name={iconName} size={iconSize} color={color} />
+      )}
+
+      {/* Show the name only for the non-SearchFood icons */}
+      {name !== "" && (
+        <Text
+          className={`${focused ? "font-psemibold" : "font-pregular"} text-xs`}
+          style={{ color: color }}
+        >
+          {name}
+        </Text>
+      )}
     </TouchableOpacity>
   );
 };
@@ -39,21 +45,23 @@ const TabsLayout = () => {
         tabBarStyle: {
           backgroundColor: "#FFFFFF",
           position: "absolute",
-          bottom: 25,
+          bottom: 20,
           marginHorizontal: 12,
-          borderRadius: 18,
-          height: 70,
-          justifyContent: "center", // Center items vertically
-          alignItems: "center", // Center items horizontally
-          flexDirection: "row", // Horizontal layout for tabs
-          shadowColor: "#000", // Optional: adds shadow for depth
+          borderRadius: 35,
+          height: 75, // Increase height to make space for lifted icon
+          paddingBottom: 0, // Ensure there's enough bottom padding for icons
+          paddingTop: 0, // Add padding on top for space
+          justifyContent: "center",
+          flexDirection: "row",
+          shadowColor: "#004365",
           shadowOffset: { width: 0, height: 0 },
           shadowOpacity: 0.1,
           shadowRadius: 5,
-          elevation: 5, // Android shadow
+          elevation: 5,
         },
       }}
     >
+      {/* Home Tab */}
       <Tabs.Screen
         name="home"
         options={{
@@ -61,7 +69,8 @@ const TabsLayout = () => {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon
-              icon={icons.home}
+              iconSet="Entypo" // Specify the icon set
+              iconName="home"
               color={color}
               name="Home"
               focused={focused}
@@ -70,6 +79,8 @@ const TabsLayout = () => {
           ),
         }}
       />
+
+      {/* Journal Tab */}
       <Tabs.Screen
         name="journal"
         options={{
@@ -77,7 +88,8 @@ const TabsLayout = () => {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon
-              icon={icons.journal}
+              iconSet="Entypo" // Specify Entypo for this tab
+              iconName="book"
               color={color}
               name="Journal"
               focused={focused}
@@ -86,6 +98,8 @@ const TabsLayout = () => {
           ),
         }}
       />
+
+      {/* SearchFood Tab - Larger and lifted */}
       <Tabs.Screen
         name="searchFood"
         options={{
@@ -93,7 +107,8 @@ const TabsLayout = () => {
           headerShown: false,
           tabBarIcon: ({ focused }) => (
             <TabIcon
-              icon={icons.plus}
+              iconSet="AntDesign" // Using AntDesign
+              iconName="pluscircle"
               color="#8B7FF5"
               name=""
               focused={focused}
@@ -102,6 +117,8 @@ const TabsLayout = () => {
           ),
         }}
       />
+
+      {/* Recommended Food Tab */}
       <Tabs.Screen
         name="recommendedFood"
         options={{
@@ -109,15 +126,18 @@ const TabsLayout = () => {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon
-              icon={icons.recommend}
+              iconSet="AntDesign" // Using Entypo
+              iconName="heart"
               color={color}
-              name="Food"
+              name="Picks"
               focused={focused}
               onPress={() => router.push("recommendedFood")}
             />
           ),
         }}
       />
+
+      {/* Insight Tab */}
       <Tabs.Screen
         name="insight"
         options={{
@@ -125,7 +145,8 @@ const TabsLayout = () => {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon
-              icon={icons.insight}
+              iconSet="Entypo" // Using AntDesign for this tab
+              iconName="bar-graph"
               color={color}
               name="Insight"
               focused={focused}

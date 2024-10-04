@@ -16,6 +16,7 @@ import { images } from "../../constants";
 import FormField from "../../components/FormField";
 import CustomButton from "../../components/CustomButton";
 import { gql, useLazyQuery } from "@apollo/client";
+import { useUser } from "../../context/UserContext";
 
 const SIGN_IN = gql`
   query SignIn($email: String!, $password: String!) {
@@ -28,6 +29,7 @@ const SIGN_IN = gql`
 `;
 
 const SignIn = () => {
+  const { setUserId } = useUser(); // Access the context to set user ID
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -57,10 +59,13 @@ const SignIn = () => {
 
       if (data && data.signIn) {
         console.log("Sign-in successful:", data.signIn);
-        
+
         // Store user_id in AsyncStorage
         await AsyncStorage.setItem("user_id", data.signIn.user_id);
-        
+
+        // Set user ID in context
+        setUserId(data.signIn.user_id);
+
         // Navigate to home screen after successful login
         router.replace("/(tabs)/home");
       } else {

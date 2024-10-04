@@ -70,7 +70,7 @@ const SearchScreen = () => {
 
   return (
     <SafeAreaView className="bg-gray-300 flex-1">
-      <View className="flex-1 justify-center px-3 space-y-7">
+      <View className="flex-1 justify-center px-3 space-y-5">
         <SearchInput
           value={search}
           onChangeText={setSearch}
@@ -80,7 +80,7 @@ const SearchScreen = () => {
         {loading && <ActivityIndicator />}
         <FlatList
           data={items}
-          contentContainerStyle={{ paddingHorizontal: 8, gap: 13, paddingBottom: 70 }}
+          contentContainerStyle={{ paddingHorizontal: 8, gap: 13, paddingBottom: 75 }}
           style={{ margin: 0 }}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={() => (

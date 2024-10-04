@@ -20,7 +20,7 @@ const Home = () => {
   };
 
   return (
-    <SafeAreaView className="bg-primary h-full">
+    <SafeAreaView className="bg-gray-300 h-full">
       <View>
         <Text>Home</Text>
         <Button title="Logout" onPress={handleLogout} />

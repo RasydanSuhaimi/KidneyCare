@@ -7,8 +7,6 @@ const CustomButton = ({
   containerStyles,
   textStyles,
   isLoading,
-  bgVariant = "primary",
-  textVariant = "default",
   IconLeft,
   className,
   ...props
@@ -17,13 +15,12 @@ const CustomButton = ({
     <TouchableOpacity
       onPress={handlePress}
       activeOpacity={0.7}
-      className={`w-full bg-secondary rounded-full min-h-[62px] flex flex-row justify-center items-center shadow-md shadow-neutral-400/70  ${bgVariant} ${containerStyles} ${
+      className={`w-full bg-secondary rounded-full min-h-[62px] flex flex-row justify-center items-center shadow-md shadow-neutral-400/70 ${containerStyles} ${
         isLoading ? "opacity-50" : ""
       }`}
       disabled={isLoading}
     >
-      {IconLeft && <IconLeft />}
-      <Text className={`text-white font-psemibold text-lg ${textStyles} ${textVariant}`}>
+      <Text className={`text-white font-psemibold text-lg`}>
         {title}
       </Text>
     </TouchableOpacity>

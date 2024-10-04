@@ -1,8 +1,9 @@
 import { Text, View, Button } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react"; // Import useEffect and useState
 import { useRoute } from "@react-navigation/native";
 import { gql, useMutation } from "@apollo/client";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const mutation = gql`
   mutation MyMutation(
@@ -27,27 +28,52 @@ const mutation = gql`
   }
 `;
 
-const addFood = () => {
+const AddFood = () => {
+  // Capitalized the component name
   const route = useRoute();
   const router = useRouter();
-
   const { food_id, label, kcal } = route.params;
 
   const [logFood] = useMutation(mutation, {
     refetchQueries: ["foodLogsForDate"],
   });
 
+  const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const id = await AsyncStorage.getItem("user_id");
+      setUserId(id);
+      console.log("Fetched User ID:", id);
+    };
+
+    fetchUserId();
+  }, []);
+
   const onPlusPressed = async () => {
-    await logFood({
-      variables: {
-        food_id,
-        kcal,
-        label,
-        user_id: "Alex",
-      },
-    });
-    router.replace("/(tabs)/journal");
+    if (userId) {
+      await logFood({
+        variables: {
+          food_id,
+          kcal,
+          label,
+          user_id: userId, // Use the dynamically fetched userId
+        },
+      });
+      router.replace("/(tabs)/journal");
+    } else {
+      console.log("User ID is not available yet.");
+    }
   };
+
+  // Fetch the user ID from AsyncStorage when the component mounts
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const storedUserId = await AsyncStorage.getItem("user_id");
+      setUserId(storedUserId); // Set user ID from AsyncStorage
+    };
+    fetchUserId();
+  }, []);
 
   return (
     <View style={{ padding: 20 }}>
@@ -61,4 +87,4 @@ const addFood = () => {
   );
 };
 
-export default addFood;
+export default AddFood;

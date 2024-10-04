@@ -3,11 +3,11 @@
 
 type Food_log {
   created_at: Date
-  food_id: String
+  food_id: String!
   id: Int!
   kcal: Int
   label: String
-  user_id: String
+  user_id: String!
 }
 
 type Users {

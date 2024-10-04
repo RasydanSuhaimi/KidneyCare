@@ -3,7 +3,7 @@ import { SplashScreen, Stack } from "expo-router";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
-import GlobalProvider from "../context/GlobalProvider";
+import { UserProvider } from "../context/UserContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -37,13 +37,15 @@ const RootLayout = () => {
   if (!fontsLoaded && !error) return null;
 
   return (
-    <ApolloProvider client={client}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-      </Stack>
-    </ApolloProvider>
+    <UserProvider>
+      <ApolloProvider client={client}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+        </Stack>
+      </ApolloProvider>
+    </UserProvider>
   );
 };
 
