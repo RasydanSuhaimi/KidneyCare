@@ -69,7 +69,7 @@ const SignIn = () => {
         // Navigate to home screen after successful login
         router.replace("/(tabs)/home");
       } else {
-        Alert.alert("Error", "Invalid email or password");
+        Alert.alert("Invalid email or password", "Try Again");
       }
     } catch (e) {
       console.error("Sign-in failed:", e);
@@ -118,7 +118,7 @@ const SignIn = () => {
           {/* Show loading indicator */}
           {isSubmitting && (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#0000ff" />
+              <ActivityIndicator/>
             </View>
           )}
 

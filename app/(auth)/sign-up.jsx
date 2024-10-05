@@ -61,7 +61,7 @@ const SignUp = () => {
 
     // Form validation
     if (!form.username || !form.email || !form.password) {
-      Alert.alert("Error", "All fields are required.");
+      Alert.alert("All fields are required", "Try Again");
       setIsSubmitting(false);
       return;
     }
@@ -76,7 +76,7 @@ const SignUp = () => {
 
     // Password length validation
     if (form.password.length < 8) {
-      Alert.alert("Error", "Password must be at least 8 characters long.");
+      Alert.alert("Password must be at least 8 characters long.");
       setIsSubmitting(false);
       return;
     }
@@ -88,13 +88,13 @@ const SignUp = () => {
       });
 
       if (data?.checkUsername) {
-        Alert.alert("Error", "Username already taken.");
+        Alert.alert("Username already taken", "Please use another Username");
         setIsSubmitting(false);
         return;
       }
 
       if (data?.checkEmail) {
-        Alert.alert("Error", "Email already taken.");
+        Alert.alert("Email already taken", "Please use another Email");
         setIsSubmitting(false);
         return;
       }
@@ -174,7 +174,7 @@ const SignUp = () => {
           {/* Show loading indicator */}
           {isSubmitting && (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#0000ff" />
+              <ActivityIndicator/>
             </View>
           )}
 

@@ -69,7 +69,7 @@ const TabsLayout = () => {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon
-              iconSet="Entypo" // Specify the icon set
+              iconSet="Entypo" 
               iconName="home"
               color={color}
               name="Home"
@@ -88,7 +88,7 @@ const TabsLayout = () => {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon
-              iconSet="Entypo" // Specify Entypo for this tab
+              iconSet="Entypo" 
               iconName="book"
               color={color}
               name="Journal"
@@ -107,7 +107,7 @@ const TabsLayout = () => {
           headerShown: false,
           tabBarIcon: ({ focused }) => (
             <TabIcon
-              iconSet="AntDesign" // Using AntDesign
+              iconSet="AntDesign" 
               iconName="pluscircle"
               color="#8B7FF5"
               name=""
@@ -126,7 +126,7 @@ const TabsLayout = () => {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon
-              iconSet="AntDesign" // Using Entypo
+              iconSet="AntDesign"
               iconName="heart"
               color={color}
               name="Picks"
@@ -145,7 +145,7 @@ const TabsLayout = () => {
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon
-              iconSet="Entypo" // Using AntDesign for this tab
+              iconSet="Entypo" 
               iconName="bar-graph"
               color={color}
               name="Insight"
