@@ -8,8 +8,8 @@ const BoxWrapper = styled(View);
 const Box = ({ title, content, isInput = false, onChangeText, value }) => {
   return (
     <BoxWrapper
-      className="border border-gray-300 rounded-lg p-4 mb-3 bg-white flex-row items-center"
-      style={styles.shadow}
+      className="border border-gray-300 rounded-xl p-4 mb-3 bg-white flex-row items-center"
+      //style={styles.shadow}
     >
       <Text className="font-bold text-l mb-3 w-1/3">{title}</Text>
       {isInput ? (

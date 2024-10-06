@@ -1,55 +1,55 @@
 import { View, Text, StyleSheet } from "react-native";
-import PropTypes from "prop-types"; // Import prop-types for validation
+import PropTypes from "prop-types";
 
-const FoodLogListItem = ({ item }) => {
+const FoodLogListItem = ({ label, serving, kcal }) => {
   return (
-    <View style={styles.container} accessibilityLabel={`${item.label} - ${item.kcal} calories`}>
+    <View
+      style={styles.container}
+      accessibilityLabel={`${label} - ${kcal} calories`}
+    >
       <View style={styles.content}>
-        <Text style={styles.label}>{item.label}</Text>
-        <Text style={styles.calories}>{item.kcal} cal</Text>
+        <Text style={styles.label}>{label}</Text>
+        <Text style={styles.serving}>Quantity: {serving}</Text>
       </View>
+      <Text style={styles.calories}>{kcal} cal</Text>
     </View>
   );
 };
 
-// Define styles using StyleSheet for better performance
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "white",
-    padding: 15,
+    padding: 12,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 3,
-    //marginBottom: 1, 
+    height: 60,
+
   },
   content: {
     flex: 1,
-    
   },
   label: {
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 14,
+    fontWeight: "600",
     color: "#333",
+  },
+  serving: {
+    fontSize: 14,
+    color: "#555",
+    marginTop: 5,
   },
   calories: {
     fontSize: 14,
-    color: "#777", 
-    marginTop: 10,
+    color: "#777",
   },
 });
 
 // Define prop types for better validation
 FoodLogListItem.propTypes = {
-  item: PropTypes.shape({
-    label: PropTypes.string.isRequired,
-    kcal: PropTypes.number.isRequired,
-  }).isRequired,
+  label: PropTypes.string.isRequired,
+  serving: PropTypes.number.isRequired,
+  kcal: PropTypes.number.isRequired,
 };
 
 export default FoodLogListItem;

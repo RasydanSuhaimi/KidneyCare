@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { SplashScreen, Stack } from "expo-router";
 import { useFonts } from "expo-font";
-import { useEffect } from "react";
 import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
 import { UserProvider } from "../context/UserContext";
+import { GestureHandlerRootView } from "react-native-gesture-handler"; // Ensure gesture-handler is imported
 
+// Prevent auto-hiding the splash screen until fonts are loaded
 SplashScreen.preventAutoHideAsync();
 
 const client = new ApolloClient({
@@ -39,11 +40,13 @@ const RootLayout = () => {
   return (
     <UserProvider>
       <ApolloProvider client={client}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-        </Stack>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+          </Stack>
+        </GestureHandlerRootView>
       </ApolloProvider>
     </UserProvider>
   );
