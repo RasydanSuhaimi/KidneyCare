@@ -7,9 +7,8 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
-
 import FoodListItem from "../../components/FoodListItem";
 import SearchInput from "../../components/SearchInput";
 import { gql, useLazyQuery } from "@apollo/client";
@@ -33,23 +32,31 @@ const query = gql`
 
 const SearchScreen = () => {
   const [search, setSearch] = useState("");
-
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(search);
+  
   const [runSearch, { data, loading, error }] = useLazyQuery(query, {
     variables: { ingr: "" },
   });
 
-  const performSearch = () => {
-    runSearch({ variables: { ingr: search } });
-  };
+  const router = useRouter();
 
-  if (error) {
-    console.log("error", error);
-    return <Text className="text-center justify-center">Failed to search</Text>;
-  }
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(search);
+    }, 300); // Delay for debouncing
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [search]);
+
+  useEffect(() => {
+    if (debouncedSearchTerm) {
+      runSearch({ variables: { ingr: debouncedSearchTerm } });
+    }
+  }, [debouncedSearchTerm, runSearch]);
 
   const items = data?.search?.hints || [];
-
-  const router = useRouter();
 
   const handleItemPress = (item) => {
     console.log(
@@ -74,20 +81,28 @@ const SearchScreen = () => {
         <SearchInput
           value={search}
           onChangeText={setSearch}
-          onSubmitEditing={performSearch}
+          placeholder="Search for a food..."
         />
 
         {loading && <ActivityIndicator />}
+
+        {error && (
+          <Text className="text-center text-red-500">
+            Failed to search. Please try again.
+          </Text>
+        )}
+
+        {items.length === 0 && !loading && !error && (
+          <View className="flex-1 items-center font-pmedium">
+            <Text>Search a food.</Text>
+          </View>
+        )}
+
         <FlatList
           data={items}
           contentContainerStyle={{ paddingHorizontal: 8, gap: 13, paddingBottom: 75 }}
           style={{ margin: 0 }}
           showsVerticalScrollIndicator={false}
-          ListEmptyComponent={() => (
-            <View className="flex-1 justify-center items-center font-pmedium">
-              <Text>Search a food</Text>
-            </View>
-          )}
           renderItem={({ item }) => (
             <TouchableOpacity onPress={() => handleItemPress(item)}>
               <FoodListItem item={item} />

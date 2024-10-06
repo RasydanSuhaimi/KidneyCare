@@ -3,28 +3,34 @@ import { Tabs, useRouter } from "expo-router";
 import AntDesign from "react-native-vector-icons/AntDesign"; // Import AntDesign icons
 import Entypo from "react-native-vector-icons/Entypo"; // Import Entypo icons
 
-// Modify TabIcon to accept both AntDesign and Entypo
+const ICON_SIZE = {
+  default: 25,
+  large: 70,
+};
+
 const TabIcon = ({ iconSet, iconName, color, name, focused, onPress }) => {
-  const iconSize = name === "" ? 70 : 25; // Larger size for SearchFood icon
+  const iconSize = name === "" ? ICON_SIZE.large : ICON_SIZE.default; // Larger size for SearchFood icon
+
+  const renderIcon = () => {
+    if (iconSet === "AntDesign") {
+      return <AntDesign name={iconName} size={iconSize} color={color} />;
+    }
+    return <Entypo name={iconName} size={iconSize} color={color} />;
+  };
 
   return (
     <TouchableOpacity
       onPress={onPress}
       className="items-center gap-2"
-      style={name === "" ? { transform: [{ translateY: -15 }] } : {}} // Lift SearchFood icon
+      style={name === "" ? { transform: [{ translateY: -15 }] } : {}}
     >
-      {/* Conditionally render the icon based on the iconSet prop */}
-      {iconSet === "AntDesign" ? (
-        <AntDesign name={iconName} size={iconSize} color={color} />
-      ) : (
-        <Entypo name={iconName} size={iconSize} color={color} />
-      )}
+      {renderIcon()}
 
       {/* Show the name only for the non-SearchFood icons */}
       {name !== "" && (
         <Text
           className={`${focused ? "font-psemibold" : "font-pregular"} text-xs`}
-          style={{ color: color }}
+          style={{ color }}
         >
           {name}
         </Text>
@@ -35,6 +41,41 @@ const TabIcon = ({ iconSet, iconName, color, name, focused, onPress }) => {
 
 const TabsLayout = () => {
   const router = useRouter();
+
+  const screens = [
+    {
+      name: "home",
+      iconSet: "Entypo",
+      iconName: "home",
+      title: "Home",
+    },
+    {
+      name: "journal",
+      iconSet: "Entypo",
+      iconName: "book",
+      title: "Journal",
+    },
+    {
+      name: "searchFood",
+      iconSet: "AntDesign",
+      iconName: "pluscircle",
+      title: "",
+      isLifted: true,
+      color: "#8B7FF5",
+    },
+    {
+      name: "recommendedFood",
+      iconSet: "AntDesign",
+      iconName: "heart",
+      title: "Picks",
+    },
+    {
+      name: "insight",
+      iconSet: "Entypo",
+      iconName: "bar-graph",
+      title: "Insight",
+    },
+  ];
 
   return (
     <Tabs
@@ -48,9 +89,9 @@ const TabsLayout = () => {
           bottom: 20,
           marginHorizontal: 12,
           borderRadius: 35,
-          height: 75, // Increase height to make space for lifted icon
-          paddingBottom: 0, // Ensure there's enough bottom padding for icons
-          paddingTop: 0, // Add padding on top for space
+          height: 75,
+          paddingBottom: 0,
+          paddingTop: 0,
           justifyContent: "center",
           flexDirection: "row",
           shadowColor: "#004365",
@@ -61,100 +102,26 @@ const TabsLayout = () => {
         },
       }}
     >
-      {/* Home Tab */}
-      <Tabs.Screen
-        name="home"
-        options={{
-          title: "Home",
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon
-              iconSet="Entypo" 
-              iconName="home"
-              color={color}
-              name="Home"
-              focused={focused}
-              onPress={() => router.push("home")}
-            />
-          ),
-        }}
-      />
-
-      {/* Journal Tab */}
-      <Tabs.Screen
-        name="journal"
-        options={{
-          title: "Journal",
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon
-              iconSet="Entypo" 
-              iconName="book"
-              color={color}
-              name="Journal"
-              focused={focused}
-              onPress={() => router.push("journal")}
-            />
-          ),
-        }}
-      />
-
-      {/* SearchFood Tab - Larger and lifted */}
-      <Tabs.Screen
-        name="searchFood"
-        options={{
-          title: "SearchFood",
-          headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <TabIcon
-              iconSet="AntDesign" 
-              iconName="pluscircle"
-              color="#8B7FF5"
-              name=""
-              focused={focused}
-              onPress={() => router.push("searchFood")}
-            />
-          ),
-        }}
-      />
-
-      {/* Recommended Food Tab */}
-      <Tabs.Screen
-        name="recommendedFood"
-        options={{
-          title: "Recommended Food",
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon
-              iconSet="AntDesign"
-              iconName="heart"
-              color={color}
-              name="Picks"
-              focused={focused}
-              onPress={() => router.push("recommendedFood")}
-            />
-          ),
-        }}
-      />
-
-      {/* Insight Tab */}
-      <Tabs.Screen
-        name="insight"
-        options={{
-          title: "Insight",
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon
-              iconSet="Entypo" 
-              iconName="bar-graph"
-              color={color}
-              name="Insight"
-              focused={focused}
-              onPress={() => router.push("insight")}
-            />
-          ),
-        }}
-      />
+      {screens.map((screen) => (
+        <Tabs.Screen
+          key={screen.name}
+          name={screen.name}
+          options={{
+            title: screen.title,
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon
+                iconSet={screen.iconSet}
+                iconName={screen.iconName}
+                color={screen.name === "searchFood" ? screen.color : color}
+                name={screen.title}
+                focused={focused}
+                onPress={() => router.push(screen.name)}
+              />
+            ),
+          }}
+        />
+      ))}
     </Tabs>
   );
 };

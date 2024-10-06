@@ -1,25 +1,22 @@
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Text,
   View,
   Button,
   SafeAreaView,
   TouchableOpacity,
-  TextInput,
   Keyboard,
   TouchableWithoutFeedback,
+  Alert,
 } from "react-native";
-import React, { useEffect, useState } from "react";
 import { useRoute } from "@react-navigation/native";
 import { gql, useMutation } from "@apollo/client";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { styled } from "nativewind";
-//import { foodLogsForDate } from '../app/(tabs)/journal'; // Update the path accordingly
-import MealPicker from "../components/MealPicker"; // Importing MealPicker
+import MealPicker from "../components/MealPicker";
+import Box from "../components/Box"; // Import the Box component
 
-const Box = styled(View);
-
-const mutation = gql`
+const INSERT_FOOD_LOG_MUTATION = gql`
   mutation MyMutation(
     $food_id: String!
     $kcal: Int!
@@ -53,7 +50,7 @@ const AddFood = () => {
   const router = useRouter();
   const { food_id, label, kcal } = route.params;
 
-  const [logFood] = useMutation(mutation, {
+  const [logFood, { loading }] = useMutation(INSERT_FOOD_LOG_MUTATION, {
     refetchQueries: ["foodLogsForDate"],
   });
 
@@ -61,29 +58,32 @@ const AddFood = () => {
   const [mealType, setMealType] = useState("Breakfast");
   const [modalVisible, setModalVisible] = useState(false);
   const [serving, setServing] = useState("1");
-  const [totalCalories, setTotalCalories] = useState(kcal);
+
+  // Memoized totalCalories calculation
+  const totalCalories = useMemo(() => {
+    const servingNumber = parseInt(serving, 10) || 1;
+    return kcal * servingNumber;
+  }, [serving, kcal]);
 
   useEffect(() => {
     const fetchUserId = async () => {
-      const storedUserId = await AsyncStorage.getItem("user_id");
-      if (storedUserId) {
-        setUserId(storedUserId);
-      } else {
-        console.warn("No user ID found in storage");
+      try {
+        const storedUserId = await AsyncStorage.getItem("user_id");
+        if (storedUserId) {
+          setUserId(storedUserId);
+        } else {
+          console.warn("No user ID found in storage");
+        }
+      } catch (error) {
+        console.error("Failed to retrieve user ID:", error);
       }
     };
     fetchUserId();
   }, []);
 
-  useEffect(() => {
-    const servingNumber = parseInt(serving) || 1;
-    setTotalCalories(kcal * servingNumber);
-  }, [serving, kcal]);
-
-  const onPlusPressed = async () => {
+  const handleLogFood = async () => {
     if (!serving || parseInt(serving) <= 0) {
-      alert("Please enter a valid serving size.");
-      return;
+      return Alert.alert("Invalid Input", "Please enter a valid serving size.");
     }
 
     if (userId) {
@@ -95,46 +95,50 @@ const AddFood = () => {
             label,
             user_id: userId,
             mealtype: mealType,
-            serving: parseInt(serving),
+            serving: parseInt(serving, 10),
           },
         });
-        setServing("1");
-        setMealType("Breakfast");
+        resetForm();
         router.replace("/(tabs)/journal");
       } catch (error) {
         console.error("Error logging food:", error);
-        alert("An error occurred while logging the food.");
+        Alert.alert("Error", "An error occurred while logging the food.");
       }
     } else {
       console.log("User ID is not available yet.");
     }
   };
 
+  const resetForm = () => {
+    setServing("1");
+    setMealType("Breakfast");
+  };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <SafeAreaView className="bg-gray-300 h-full">
+      <SafeAreaView className="bg-gray-300 flex-1 ">
         <View className="p-5">
-          <View>
-            <Box className="border border-gray-300 rounded-lg p-4 mb-2 bg-white flex-row items-center">
-              <Text className="font-bold text-l mb-3 w-1/3">
-                Select Meal Type
-              </Text>
-              <TouchableOpacity
-                onPress={() => setModalVisible(true)}
-                className="ml-auto w-1/3 text-right bg-gray-300 rounded-lg p-2"
-              >
-                <Text
-                  className="text-right"
-                  numberOfLines={3}
-                  ellipsizeMode="tail"
+          <Box
+            title="Meal"
+            content={
+              <View className="flex-row items-center justify-between">
+                <Text className="w-1/3"></Text>
+                <TouchableOpacity
+                  onPress={() => setModalVisible(true)}
+                  className="bg-gray-300 rounded-lg p-2 w-2/3"
                 >
-                  {mealType}
-                </Text>
-              </TouchableOpacity>
-            </Box>
-          </View>
+                  <Text
+                    className="text-right"
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {mealType}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            }
+          />
 
-          {/* Use the MealPicker component */}
           <MealPicker
             modalVisible={modalVisible}
             setModalVisible={setModalVisible}
@@ -142,40 +146,17 @@ const AddFood = () => {
             setMealType={setMealType}
           />
 
-          <Box className="border border-gray-300 rounded-lg p-4 mb-2 bg-white flex-row items-center">
-            <Text className="font-bold text-l mb-3 w-1/3">Food Name</Text>
-            <Text
-              className="w-2/3 text-right"
-              numberOfLines={3}
-              ellipsizeMode="tail"
-            >
-              {label}
-            </Text>
-          </Box>
+          <Box title="Food Name" content={label} />
+          <Box title="Calories" content={`${totalCalories} kcal`} />
+          <Box
+            title="Serving"
+            isInput
+            onChangeText={setServing}
+            value={serving}
+            keyboardType="numeric" // Ensures only numbers can be entered
+          />
 
-          <Box className="border border-gray-300 rounded-lg p-4 mb-2 bg-white flex-row items-center">
-            <Text className="font-bold text-l mb-3 w-1/3 ">Calories</Text>
-            <Text
-              className="w-2/3 text-right"
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {totalCalories} kcal
-            </Text>
-          </Box>
-
-          <Box className="border border-gray-300 rounded-lg p-4 mb-2 bg-white flex-row items-center">
-            <Text className="font-bold text-l mb-3 w-1/3">Serving</Text>
-            <TextInput
-              className="ml-auto w-1/3 text-right bg-gray-300 rounded-lg p-2"
-              value={serving}
-              onChangeText={setServing}
-              keyboardType="numeric"
-              placeholder="Enter serving in grams"
-            />
-          </Box>
-
-          <Button title="Add Food" onPress={onPlusPressed} />
+          <Button title="Add Food" onPress={handleLogFood} disabled={loading} />
           <Button title="Go Back" onPress={() => router.back()} />
         </View>
       </SafeAreaView>

@@ -1,14 +1,8 @@
-// MealPicker.js
 import React from "react";
-import { Modal, View, Button } from "react-native";
+import { Modal, View, Button, StyleSheet } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 
-const MealPicker = ({
-  modalVisible,
-  setModalVisible,
-  mealType,
-  setMealType,
-}) => {
+const MealPicker = ({ modalVisible, setModalVisible, mealType, setMealType }) => {
   return (
     <Modal
       transparent={true}
@@ -16,14 +10,17 @@ const MealPicker = ({
       visible={modalVisible}
       onRequestClose={() => setModalVisible(false)}
     >
-      <View className="flex-1 justify-center items-center shadow">
-        <View className="bg-white bg-opacity-70 rounded-lg w-80 p-5">
+      <View style={styles.modalContainer}>
+        <View style={styles.pickerContainer}>
           <Picker
             selectedValue={mealType}
             onValueChange={(itemValue) => {
               setMealType(itemValue);
               setModalVisible(false);
             }}
+            style={styles.picker} 
+            dropdownIconColor="#007AFF" 
+            itemStyle={styles.pickerItem} 
           >
             <Picker.Item label="Breakfast" value="Breakfast" />
             <Picker.Item label="Lunch" value="Lunch" />
@@ -36,5 +33,29 @@ const MealPicker = ({
     </Modal>
   );
 };
+
+const styles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  pickerContainer: {
+    backgroundColor: "#F7F7F7", 
+    borderRadius: 10,
+    width: "80%",
+    padding: 20,
+    elevation: 5, 
+  },
+  picker: {
+    height: 150, 
+    width: "100%",
+  },
+  pickerItem: {
+    color: "#007AFF", 
+    fontSize: 16, 
+  },
+});
 
 export default MealPicker;

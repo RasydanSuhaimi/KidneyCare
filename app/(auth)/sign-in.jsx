@@ -35,15 +35,13 @@ const SignIn = () => {
     password: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [signInUser] = useLazyQuery(SIGN_IN);
 
-  // Check if user is already logged in by verifying if user ID is stored in AsyncStorage
+  // Check if user is already logged in
   useEffect(() => {
     const checkUserSession = async () => {
       const userId = await AsyncStorage.getItem("user_id");
       if (userId) {
-        // User is logged in, redirect to the home screen
         router.replace("/(tabs)/home");
       }
     };
@@ -57,23 +55,16 @@ const SignIn = () => {
         variables: { email: form.email, password: form.password },
       });
 
-      if (data && data.signIn) {
-        console.log("Sign-in successful:", data.signIn);
-
-        // Store user_id in AsyncStorage
+      if (data?.signIn) {
         await AsyncStorage.setItem("user_id", data.signIn.user_id);
-
-        // Set user ID in context
         setUserId(data.signIn.user_id);
-
-        // Navigate to home screen after successful login
         router.replace("/(tabs)/home");
       } else {
-        Alert.alert("Invalid email or password", "Try Again");
+        Alert.alert("Invalid email or password", "Please try again.");
       }
-    } catch (e) {
-      console.error("Sign-in failed:", e);
-      Alert.alert("Error", "An error occurred while signing in");
+    } catch (error) {
+      console.error("Sign-in failed:", error);
+      Alert.alert("Error", "An error occurred while signing in. Please check your credentials and try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -82,14 +73,14 @@ const SignIn = () => {
   return (
     <SafeAreaView className="bg-gray-300 h-full">
       <ScrollView>
-        <View className="w-full justify-center min-h-[70vh] px-4 my-6">
-          <Image
+      <View className="w-full justify-center min-h-[80vh] p-6">
+      <Image
             source={images.logo}
             resizeMode="contain"
             className="w-[115px] h-[35px]"
           />
 
-          <Text className="text-2xl text-black text-semibold mt-10 font-psemibold">
+          <Text className="text-2xl text-black font-semibold mt-10">
             Log in to KidneyCare
           </Text>
 
@@ -99,6 +90,8 @@ const SignIn = () => {
             handleChangeText={(e) => setForm({ ...form, email: e })}
             otherStyles="mt-7"
             keyboardType="email-address"
+            autoCapitalize="none"
+            autoCompleteType="email"
           />
 
           <FormField
@@ -106,6 +99,7 @@ const SignIn = () => {
             value={form.password}
             handleChangeText={(e) => setForm({ ...form, password: e })}
             otherStyles="mt-7"
+            secureTextEntry // Hide password input
           />
 
           <CustomButton
@@ -115,20 +109,20 @@ const SignIn = () => {
             isLoading={isSubmitting}
           />
 
-          {/* Show loading indicator */}
           {isSubmitting && (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator/>
+            <View className="absolute top-0 left-0 right-0 bottom-0 bg-gray-300 opacity-70 z-10 flex items-center justify-center">
+              <ActivityIndicator size="large" />
+              <Text className="text-black mt-2">Loading...</Text>
             </View>
           )}
 
           <View className="justify-center pt-5 flex-row gap-2">
-            <Text className="text-lg text-black font-pregular">
+            <Text className="text-l text-black font-pregular">
               Don't have an account?
             </Text>
             <Link
               href="/sign-up"
-              className="text-lg text-secondary font-psemibold"
+              className="text-l text-secondary font-psemibold"
             >
               Sign Up
             </Link>
@@ -139,20 +133,6 @@ const SignIn = () => {
       <StatusBar backgroundColor="#161622" style="dark" />
     </SafeAreaView>
   );
-};
-
-const styles = {
-  loadingContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "gray-300", // Adjust color and opacity as needed
-    zIndex: 10,
-  },
 };
 
 export default SignIn;

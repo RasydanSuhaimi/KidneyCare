@@ -44,63 +44,79 @@ const SignUp = () => {
     username: "",
     email: "",
     password: "",
+    confirmPassword: "", // Added confirmPassword field
   });
-
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
   const router = useRouter();
 
-  // Apollo's useMutation hook for signing up a user
   const [signUpUser] = useMutation(SIGNUP_MUTATION);
+  const [checkUsernameAndEmail] = useLazyQuery(CHECK_USERNAME_AND_EMAIL_QUERY);
 
-  // Apollo's useLazyQuery hook for checking if the username exists
-  const [checkUsernameAndEmail, { data: checkData, error: checkError }] =
-    useLazyQuery(CHECK_USERNAME_AND_EMAIL_QUERY);
+  const validateForm = () => {
+    if (!form.username || !form.email || !form.password || !form.confirmPassword) {
+      Alert.alert("Validation Error", "All fields are required.");
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      Alert.alert("Validation Error", "Please enter a valid email address.");
+      return false;
+    }
+    if (form.password.length < 8) {
+      Alert.alert("Validation Error", "Password must be at least 8 characters long.");
+      return false;
+    }
+    if (form.password !== form.confirmPassword) {
+      Alert.alert("Validation Error", "Passwords do not match.");
+      return false;
+    }
+    return true;
+  };
+
+  const handleError = (error) => {
+    const message = error.graphQLErrors?.[0]?.message || error.message || "An unexpected error occurred.";
+    if (message.includes("duplicate key value violates unique constraint")) {
+      if (message.includes("users_username_key")) {
+        Alert.alert("Oops!", "This username is already in use. Please choose another one.");
+      } else if (message.includes("users_email_key")) {
+        Alert.alert("Oops!", "This email is already associated with another account. Please use a different email.");
+      } else {
+        Alert.alert("Oops!", message);
+      }
+    } else {
+      Alert.alert("Oops!", message);
+    }
+  };
 
   const submit = async () => {
     setIsSubmitting(true);
-
-    // Form validation
-    if (!form.username || !form.email || !form.password) {
-      Alert.alert("All fields are required", "Try Again");
-      setIsSubmitting(false);
-      return;
-    }
-
-    // Email validation (simple regex)
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(form.email)) {
-      Alert.alert("Error", "Please enter a valid email address.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    // Password length validation
-    if (form.password.length < 8) {
-      Alert.alert("Password must be at least 8 characters long.");
+    if (!validateForm()) {
       setIsSubmitting(false);
       return;
     }
 
     try {
-      // Check if username or email is taken
+      setIsChecking(true);
       const { data } = await checkUsernameAndEmail({
         variables: { username: form.username, email: form.email },
       });
 
       if (data?.checkUsername) {
-        Alert.alert("Username already taken", "Please use another Username");
+        Alert.alert("Username Taken", "Please choose another username.");
+        setIsChecking(false);
         setIsSubmitting(false);
         return;
       }
 
       if (data?.checkEmail) {
-        Alert.alert("Email already taken", "Please use another Email");
+        Alert.alert("Email Taken", "Please use a different email.");
+        setIsChecking(false);
         setIsSubmitting(false);
         return;
       }
 
-      // Execute the GraphQL mutation for sign up
-      const { data: signUpData } = await signUpUser({
+      await signUpUser({
         variables: {
           username: form.username,
           email: form.email,
@@ -108,37 +124,26 @@ const SignUp = () => {
         },
       });
 
-      // Success feedback
       Alert.alert("Success", "User created successfully!");
-
-      // Redirect to sign-in page
       router.push("/sign-in");
     } catch (error) {
-      // Handle query error for checkUsername
-      if (usernameCheckError) {
-        Alert.alert(
-          "Error",
-          usernameCheckError.message || "Something went wrong."
-        );
-      } else {
-        Alert.alert("Error", error.message || "Something went wrong.");
-      }
+      handleError(error);
     } finally {
       setIsSubmitting(false);
+      setIsChecking(false);
     }
   };
 
   return (
     <SafeAreaView className="bg-gray-300 h-full">
-      <ScrollView>
-        <View className="w-full justify-center min-h-[70vh] px-4 my-6">
+        <View className="w-full justify-center min-h-[85vh] p-6">
           <Image
             source={images.logo}
             resizeMode="contain"
             className="w-[115px] h-[35px]"
           />
 
-          <Text className="text-2xl text-black text-semibold mt-10 font-psemibold">
+          <Text className="text-2xl text-black font-semibold mt-10">
             Sign up to KidneyCare
           </Text>
 
@@ -146,14 +151,14 @@ const SignUp = () => {
             title="Username"
             value={form.username}
             handleChangeText={(e) => setForm({ ...form, username: e })}
-            otherStyles="mt-10"
+            otherStyles="mt-8"
           />
 
           <FormField
             title="Email"
             value={form.email}
             handleChangeText={(e) => setForm({ ...form, email: e })}
-            otherStyles="mt-7"
+            otherStyles="mt-6"
             keyboardType="email-address"
           />
 
@@ -161,7 +166,16 @@ const SignUp = () => {
             title="Password"
             value={form.password}
             handleChangeText={(e) => setForm({ ...form, password: e })}
-            otherStyles="mt-7"
+            otherStyles="mt-6"
+            secureTextEntry
+          />
+
+          <FormField
+            title="Confirm Password"
+            value={form.confirmPassword}
+            handleChangeText={(e) => setForm({ ...form, confirmPassword: e })}
+            otherStyles="mt-6"
+            secureTextEntry
           />
 
           <CustomButton
@@ -171,44 +185,29 @@ const SignUp = () => {
             isLoading={isSubmitting}
           />
 
-          {/* Show loading indicator */}
-          {isSubmitting && (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator/>
+          {(isSubmitting || isChecking) && (
+            <View className="absolute top-0 left-0 right-0 bottom-0 bg-gray-300 opacity-70 z-10 flex items-center justify-center">
+              <ActivityIndicator size="large" />
+              <Text className="text-black mt-2">Loading...</Text>
             </View>
           )}
 
           <View className="justify-center pt-5 flex-row gap-2">
-            <Text className="text-lg text-black font-pregular">
-              Have account?
+            <Text className="text-l text-black font-pregular">
+              Have an account?
             </Text>
             <Link
               href="/sign-in"
-              className="text-lg text-secondary font-psemibold"
+              className="text-l text-secondary font-psemibold"
             >
               Sign In
             </Link>
           </View>
         </View>
-      </ScrollView>
 
       <StatusBar backgroundColor="#161622" style="dark" />
     </SafeAreaView>
   );
-};
-
-const styles = {
-  loadingContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "gray-300",
-    zIndex: 10,
-  },
 };
 
 export default SignUp;
