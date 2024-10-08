@@ -14,7 +14,7 @@ import { gql, useMutation } from "@apollo/client";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MealPicker from "../components/MealPicker";
-import Box from "../components/Box"; // Import the Box component
+import Box from "../components/Box";
 
 const INSERT_FOOD_LOG_MUTATION = gql`
   mutation MyMutation(

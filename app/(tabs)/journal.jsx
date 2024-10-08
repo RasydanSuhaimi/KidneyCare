@@ -4,14 +4,21 @@ import {
   FlatList,
   ActivityIndicator,
   TouchableOpacity,
+  Modal,
 } from "react-native";
+import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { gql, useQuery, useMutation } from "@apollo/client";
 import dayjs from "dayjs";
 import { Swipeable } from "react-native-gesture-handler";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { Dimensions } from "react-native";
+
 import FoodLogListItem from "../../components/FoodLogListItem";
+import CustomCircleProgress from "../../components/CustomCircleProgress";
+import HorizontalDatePicker from "../../components/HorizontalDatePicker";
 
 const QUERY_FOOD_LOGS = gql`
   query foodLogsForDate($date: Date!, $user_id: String!) {
@@ -38,7 +45,11 @@ const DELETE_FOOD_LOG = gql`
 
 const Journal = () => {
   const [userId, setUserId] = useState(null);
-  const formattedDate = dayjs().format("YYYY-MM-DD");
+  const [loadingModalVisible, setLoadingModalVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(
+    dayjs().format("YYYY-MM-DD")
+  ); // State for selected date
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -51,20 +62,32 @@ const Journal = () => {
 
   const { data, loading, error, refetch } = useQuery(QUERY_FOOD_LOGS, {
     variables: {
-      date: formattedDate,
+      date: selectedDate, // Use selectedDate for querying food logs
       user_id: userId,
     },
     skip: !userId,
+    onCompleted: () => setLoadingModalVisible(false),
+    onError: () => setLoadingModalVisible(false),
   });
 
   const [deleteFoodLog] = useMutation(DELETE_FOOD_LOG, {
     onCompleted: () => {
-      refetch(); // Refetch food logs after deletion
+      refetch();
     },
     onError: (err) => {
       console.error("Error deleting food log:", err.message);
     },
   });
+
+  useEffect(() => {
+    setLoadingModalVisible(loading);
+  }, [loading]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
 
   if (error) {
     return (
@@ -100,56 +123,103 @@ const Journal = () => {
     return dataList;
   };
 
-  const dataList = createDataList(data?.foodLogsForDate || []);
+  const dataList = createDataList(data?.foodLogsForDate || []); // Ensure this is defined before use
 
   const handleDeleteLog = (id) => {
     deleteFoodLog({ variables: { id } });
   };
 
-  const renderRightActions = (id) => {
-    return (
-      <TouchableOpacity
-        style={{
-          backgroundColor: "red",
-          justifyContent: "center",
-          alignItems: "center",
-          width: 80, 
-          height: 60, 
-        }}
-        onPress={() => handleDeleteLog(id)}
-      >
-        <Text style={{ color: "white", fontWeight: "bold" }}>Delete</Text>
-      </TouchableOpacity>
-    );
+  const totalCalories = dataList.reduce((total, item) => {
+    if (item.type === "header") {
+      return total + item.logs.reduce((sum, log) => sum + log.kcal, 0);
+    }
+    return total;
+  }, 0);
+
+  const targetCalories = 2000; // Set your target calorie limit here
+
+  const deviceWidth = Dimensions.get("window").width;
+
+  // Function to generate dates for horizontal swiping
+  const generateDates = (currentDate, numDays = 30) => {
+    return Array.from({ length: numDays }, (_, index) => {
+      const date = dayjs(currentDate).subtract(numDays / 2 - index, "day");
+      return {
+        fullDate: date.format("YYYY-MM-DD"), // Keep the full date for querying
+        displayDate: date.format("ddd"), // Format for abbreviated day (e.g., "Mon")
+        day: date.format("DD"), // Day of the month (e.g., "1")
+      };
+    });
   };
 
+  const dateList = generateDates(selectedDate, 5); // Adjust the number of visible dates
+
   return (
-    <SafeAreaView className="bg-gray-300 h-full">
-      <View className="flex-1 px-3 space-y-3">
-        <View className="flex-row justify-between items-center">
-          <Text className="text-100 font-pmedium flex-1">Calories</Text>
-          <Text> 1770 - 360 = 1692</Text>
-        </View>
+    <SafeAreaView
+      className="bg-secondary flex-1"
+      edges={["top", "left", "right"]}
+    >
+      <View className="px-4 bg-secondary">
+        {/* Container for Horizontal Date Picker */}
+        <HorizontalDatePicker
+          dateList={dateList}
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
+          onDateChange={refetch}
+        />
+      </View>
 
-        <View className="flex-row justify-between items-center">
-          <Text className="text-100 font-pmedium flex-1">
-            Today's logged food
-          </Text>
-        </View>
-
+      {/* Progress Circle Container */}
+      <View
+        className="flex-1 px-5 space-y-5 bg-gray-300"
+        style={{
+          borderTopLeftRadius: 25,
+          borderTopRightRadius: 25,
+        }}
+      >
         <FlatList
           data={dataList}
-          contentContainerStyle={{ paddingBottom: 75 }}
+          contentContainerStyle={{ paddingBottom: 110, marginTop: 20 }}
           showsVerticalScrollIndicator={false}
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          ListHeaderComponent={
+            <View className="flex items-center mb-5">
+              <View
+                style={{
+                  width: Dimensions.get("window").width - 40,
+                  height: 110,
+                  borderRadius: 25,
+                  backgroundColor: "white",
+                  flexDirection: "row",
+                  justifyContent: "left",
+                  alignItems: "center",
+                  textAlign: "center",
+                }}
+              >
+                <CustomCircleProgress
+                  progress={totalCalories / targetCalories}
+                  size={80}
+                  strokeWidth={7}
+                />
+                <View style={{ marginLeft: 15 }}>
+                  <Text style={{ fontSize: 15, fontWeight: "600" }}>
+                    {totalCalories} of {targetCalories} Cal
+                  </Text>
+                  <Text style={{ fontSize: 14, padding: "20" }}>
+                    Add more calories to your diet
+                  </Text>
+                </View>
+              </View>
+            </View>
+          }
           renderItem={({ item }) => {
             if (item.type === "header") {
-              const totalCalories = item.logs.reduce(
-                (total, log) => total + log.kcal,
-                0
-              );
-
               return (
-                <View className="bg-white p-3 rounded-xl mt-3">
+                <View
+                  className="bg-white p-3 mb-5"
+                  style={{ borderRadius: 25 }}
+                >
                   <View className="flex-row justify-between items-center">
                     <Text
                       style={{ fontSize: 17, fontWeight: "600" }}
@@ -161,21 +231,39 @@ const Journal = () => {
                       style={{ fontSize: 16, fontWeight: "600" }}
                       className="text-right p-3 color-secondary mb-2"
                     >
-                      {totalCalories} kcal
+                      {item.logs.reduce((sum, log) => sum + log.kcal, 0)} kcal
                     </Text>
                   </View>
 
                   {item.logs.length > 0 ? (
                     item.logs.map((log, index) => (
                       <Swipeable
-                        key={log.id}
-                        renderRightActions={() => renderRightActions(log.id)}
+                        key={log.id} // Use log.id as unique key for Swipeable
+                        renderRightActions={() => (
+                          <TouchableOpacity
+                            style={{
+                              backgroundColor: "red",
+                              justifyContent: "center",
+                              alignItems: "center",
+                              borderRadius: 15,
+                              width: 60,
+                              height: 60,
+                            }}
+                            onPress={() => handleDeleteLog(log.id)}
+                          >
+                            <MaterialIcons
+                              name="delete"
+                              size={24}
+                              color="white"
+                            />
+                          </TouchableOpacity>
+                        )}
                       >
-                        <View key={log.id} className="mb-2">
+                        <View className="mb-2">
                           <FoodLogListItem
                             label={log.label}
-                            serving={parseFloat(log.serving)} // Ensure serving is a number
-                            kcal={parseFloat(log.kcal)} // Ensure kcal is a number
+                            serving={parseFloat(log.serving)}
+                            kcal={parseFloat(log.kcal)}
                           />
 
                           {index !== item.logs.length - 1 && (
@@ -185,8 +273,8 @@ const Journal = () => {
                       </Swipeable>
                     ))
                   ) : (
-                    <Text className="text-center text-gray-400">
-                      No food logs yet
+                    <Text className="text-gray-500 text-center p-3">
+                      No entries for {item.mealType}.
                     </Text>
                   )}
                 </View>
@@ -194,20 +282,37 @@ const Journal = () => {
             }
             return null;
           }}
-          keyExtractor={(item, index) =>
-            item.type === "header"
-              ? `header-${item.mealType}`
-              : item.id.toString()
-          }
-          ListFooterComponent={() =>
-            loading ? (
-              <View className="flex-1 justify-center items-center mt-4">
-                <ActivityIndicator />
-              </View>
-            ) : null
-          }
         />
       </View>
+
+      <Modal
+        transparent={true}
+        visible={loadingModalVisible}
+        animationType="fade"
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: 100,
+              height: 100,
+              borderRadius: 20,
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: "#333",
+            }}
+          >
+            <ActivityIndicator size="large" color="#fff" />
+            <Text style={{ color: "#fff", marginTop: 10 }}>Loading</Text>
+          </View>
+        </View>
+      </Modal>
+      <StatusBar backgroundColor="#161622" style="dark" />
     </SafeAreaView>
   );
 };

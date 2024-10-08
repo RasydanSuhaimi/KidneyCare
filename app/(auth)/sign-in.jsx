@@ -64,7 +64,10 @@ const SignIn = () => {
       }
     } catch (error) {
       console.error("Sign-in failed:", error);
-      Alert.alert("Error", "An error occurred while signing in. Please check your credentials and try again.");
+      Alert.alert(
+        "Error",
+        "An error occurred while signing in. Please check your credentials and try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -72,63 +75,72 @@ const SignIn = () => {
 
   return (
     <SafeAreaView className="bg-gray-300 h-full">
-      <ScrollView>
       <View className="w-full justify-center min-h-[80vh] p-6">
-      <Image
-            source={images.logo}
-            resizeMode="contain"
-            className="w-[115px] h-[35px]"
-          />
+        <Image
+          source={images.logo}
+          resizeMode="contain"
+          className="w-[115px] h-[35px]"
+        />
 
-          <Text className="text-2xl text-black font-semibold mt-10">
-            Log in to KidneyCare
-          </Text>
+        <Text className="text-2xl text-black font-semibold mt-10">
+          Log in to KidneyCare
+        </Text>
 
-          <FormField
-            title="Email"
-            value={form.email}
-            handleChangeText={(e) => setForm({ ...form, email: e })}
-            otherStyles="mt-7"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCompleteType="email"
-          />
+        <FormField
+          title="Email"
+          value={form.email}
+          handleChangeText={(e) => setForm({ ...form, email: e })}
+          otherStyles="mt-7"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCompleteType="email"
+        />
 
-          <FormField
-            title="Password"
-            value={form.password}
-            handleChangeText={(e) => setForm({ ...form, password: e })}
-            otherStyles="mt-7"
-            secureTextEntry // Hide password input
-          />
+        <FormField
+          title="Password"
+          value={form.password}
+          handleChangeText={(e) => setForm({ ...form, password: e })}
+          otherStyles="mt-7"
+          secureTextEntry // Hide password input
+        />
 
-          <CustomButton
-            title="Sign in"
-            handlePress={submit}
-            containerStyles="mt-7"
-            isLoading={isSubmitting}
-          />
+        <CustomButton
+          title="Sign in"
+          handlePress={submit}
+          containerStyles="mt-7"
+          isLoading={isSubmitting}
+        />
 
-          {isSubmitting && (
-            <View className="absolute top-0 left-0 right-0 bottom-0 bg-gray-300 opacity-70 z-10 flex items-center justify-center">
-              <ActivityIndicator size="large" />
-              <Text className="text-black mt-2">Loading...</Text>
-            </View>
-          )}
-
-          <View className="justify-center pt-5 flex-row gap-2">
-            <Text className="text-l text-black font-pregular">
-              Don't have an account?
-            </Text>
-            <Link
-              href="/sign-up"
-              className="text-l text-secondary font-psemibold"
+        {isSubmitting && (
+          <View className="absolute top-0 left-0 right-0 bottom-0  z-10 flex items-center justify-center">
+            <View
+              style={{
+                width: 100,
+                height: 100,
+                borderRadius: 20,
+                backgroundColor: "#333",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
             >
-              Sign Up
-            </Link>
+              <ActivityIndicator size="large" color="#fff" />
+              <Text style={{ color: "#fff", marginTop: 10 }}>Loading</Text>
+            </View>
           </View>
+        )}
+
+        <View className="justify-center pt-5 flex-row gap-2">
+          <Text className="text-l text-black font-pregular">
+            Don't have an account?
+          </Text>
+          <Link
+            href="/sign-up"
+            className="text-l text-secondary font-psemibold"
+          >
+            Sign Up
+          </Link>
         </View>
-      </ScrollView>
+      </View>
 
       <StatusBar backgroundColor="#161622" style="dark" />
     </SafeAreaView>
