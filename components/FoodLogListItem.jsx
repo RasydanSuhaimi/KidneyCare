@@ -9,7 +9,7 @@ const FoodLogListItem = ({ label, serving, kcal }) => {
     >
       <View style={styles.content}>
         <Text style={styles.label}>{label}</Text>
-        <Text style={styles.serving}>Quantity: {serving}</Text>
+        <Text style={styles.serving}>{serving} Serving</Text>
       </View>
       <Text style={styles.calories}>{kcal} cal</Text>
     </View>

@@ -1,23 +1,17 @@
-import {
-  View,
-  Text,
-  FlatList,
-  ActivityIndicator,
-  TouchableOpacity,
-  Modal,
-} from "react-native";
+import { View, Text, FlatList, TouchableOpacity } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { gql, useQuery, useMutation } from "@apollo/client";
 import dayjs from "dayjs";
 import { Swipeable } from "react-native-gesture-handler";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Dimensions } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import LoadingIndicator from "../../components/LoadingIndicator";
 
 import FoodLogListItem from "../../components/FoodLogListItem";
-import CustomCircleProgress from "../../components/CustomCircleProgress";
+import CalorieProgress from "../../components/CalorieProgress";
 import HorizontalDatePicker from "../../components/HorizontalDatePicker";
 
 const QUERY_FOOD_LOGS = gql`
@@ -44,6 +38,7 @@ const DELETE_FOOD_LOG = gql`
 `;
 
 const Journal = () => {
+  const navigation = useNavigation();
   const [userId, setUserId] = useState(null);
   const [loadingModalVisible, setLoadingModalVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState(
@@ -54,11 +49,13 @@ const Journal = () => {
   useEffect(() => {
     const fetchUserId = async () => {
       const id = await AsyncStorage.getItem("user_id");
-      setUserId(id);
+      if (id) {
+        setUserId(id);
+      }
     };
 
     fetchUserId();
-  }, []);
+  }, []); // Empty dependency array to run only once
 
   const { data, loading, error, refetch } = useQuery(QUERY_FOOD_LOGS, {
     variables: {
@@ -66,16 +63,18 @@ const Journal = () => {
       user_id: userId,
     },
     skip: !userId,
-    onCompleted: () => setLoadingModalVisible(false),
-    onError: () => setLoadingModalVisible(false),
   });
 
+  useEffect(() => {
+    if (loading) setLoadingModalVisible(true);
+    else setLoadingModalVisible(false);
+  }, [loading]);
+
   const [deleteFoodLog] = useMutation(DELETE_FOOD_LOG, {
-    onCompleted: () => {
-      refetch();
-    },
+    onCompleted: () => refetch(),
     onError: (err) => {
       console.error("Error deleting food log:", err.message);
+      Alert.alert("Error", "Failed to delete food log. Please try again.");
     },
   });
 
@@ -123,36 +122,47 @@ const Journal = () => {
     return dataList;
   };
 
-  const dataList = createDataList(data?.foodLogsForDate || []); // Ensure this is defined before use
+  const dataList = useMemo(
+    () => createDataList(data?.foodLogsForDate || []),
+    [data]
+  ); // Ensure this is defined before use
 
   const handleDeleteLog = (id) => {
-    deleteFoodLog({ variables: { id } });
+    setTimeout(() => deleteFoodLog({ variables: { id } }), 100); // Delay for smoother UX
   };
 
-  const totalCalories = dataList.reduce((total, item) => {
-    if (item.type === "header") {
-      return total + item.logs.reduce((sum, log) => sum + log.kcal, 0);
-    }
-    return total;
-  }, 0);
+  const totalCalories = useMemo(() => {
+    return dataList.reduce((total, item) => {
+      if (item.type === "header") {
+        return total + item.logs.reduce((sum, log) => sum + log.kcal, 0);
+      }
+      return total;
+    }, 0);
+  }, [dataList]);
 
   const targetCalories = 2000; // Set your target calorie limit here
 
-  const deviceWidth = Dimensions.get("window").width;
+  const generateDates = (currentDate) => {
+    const startOfMonth = dayjs(currentDate).startOf("month");
+    const endOfMonth = dayjs(currentDate).endOf("month");
 
-  // Function to generate dates for horizontal swiping
-  const generateDates = (currentDate, numDays = 30) => {
-    return Array.from({ length: numDays }, (_, index) => {
-      const date = dayjs(currentDate).subtract(numDays / 2 - index, "day");
-      return {
-        fullDate: date.format("YYYY-MM-DD"), // Keep the full date for querying
-        displayDate: date.format("ddd"), // Format for abbreviated day (e.g., "Mon")
-        day: date.format("DD"), // Day of the month (e.g., "1")
-      };
-    });
+    const dates = [];
+    for (
+      let date = startOfMonth;
+      date.isBefore(endOfMonth.add(0, "day"));
+      date = date.add(1, "day")
+    ) {
+      dates.push({
+        fullDate: date.format("YYYY-MM-DD"),
+        displayDate: date.format("ddd"),
+        day: date.format("DD"),
+      });
+    }
+
+    return dates;
   };
 
-  const dateList = generateDates(selectedDate, 5); // Adjust the number of visible dates
+  const dateList = generateDates(selectedDate);
 
   return (
     <SafeAreaView
@@ -184,34 +194,11 @@ const Journal = () => {
           refreshing={refreshing}
           onRefresh={handleRefresh}
           ListHeaderComponent={
-            <View className="flex items-center mb-5">
-              <View
-                style={{
-                  width: Dimensions.get("window").width - 40,
-                  height: 110,
-                  borderRadius: 25,
-                  backgroundColor: "white",
-                  flexDirection: "row",
-                  justifyContent: "left",
-                  alignItems: "center",
-                  textAlign: "center",
-                }}
-              >
-                <CustomCircleProgress
-                  progress={totalCalories / targetCalories}
-                  size={80}
-                  strokeWidth={7}
-                />
-                <View style={{ marginLeft: 15 }}>
-                  <Text style={{ fontSize: 15, fontWeight: "600" }}>
-                    {totalCalories} of {targetCalories} Cal
-                  </Text>
-                  <Text style={{ fontSize: 14, padding: "20" }}>
-                    Add more calories to your diet
-                  </Text>
-                </View>
-              </View>
-            </View>
+            <CalorieProgress
+              totalCalories={totalCalories}
+              targetCalories={targetCalories}
+              onNavigate={() => navigation.navigate("insight")}
+            />
           }
           renderItem={({ item }) => {
             if (item.type === "header") {
@@ -285,34 +272,8 @@ const Journal = () => {
         />
       </View>
 
-      <Modal
-        transparent={true}
-        visible={loadingModalVisible}
-        animationType="fade"
-      >
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <View
-            style={{
-              width: 100,
-              height: 100,
-              borderRadius: 20,
-              justifyContent: "center",
-              alignItems: "center",
-              backgroundColor: "#333",
-            }}
-          >
-            <ActivityIndicator size="large" color="#fff" />
-            <Text style={{ color: "#fff", marginTop: 10 }}>Loading</Text>
-          </View>
-        </View>
-      </Modal>
-      <StatusBar backgroundColor="#161622" style="dark" />
+      <LoadingIndicator visible={loadingModalVisible} />
+      <StatusBar backgroundColor="#161622" style="light" />
     </SafeAreaView>
   );
 };

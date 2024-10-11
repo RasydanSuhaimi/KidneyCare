@@ -6,6 +6,10 @@ type Food_log {
   food_id: String!
   id: Int!
   kcal: Int
+  protein: Float
+  cholesterol: Float
+  fat: Float
+  fiber: Float
   label: String
   user_id: String!
   mealtype: String
@@ -100,10 +104,7 @@ Feel free to modify them or aggregate more.
 """
 type Mutation {
   " Mutations for type 'Food_log' "
-  deleteFood_log(
-    id: Int!
-
-  ): Food_log
+  deleteFood_log(id: Int!): Food_log
     @dbquery(
       type: "postgresql"
       schema: "public"
@@ -115,10 +116,13 @@ type Mutation {
     label: String
     food_id: String
     kcal: Int
+    protein: Float
+    cholesterol: Float
+    fat: Float
+    fiber: Float
     user_id: String
     mealtype: String
     serving: Int
-
   ): Food_log
     @dbquery(
       type: "postgresql"

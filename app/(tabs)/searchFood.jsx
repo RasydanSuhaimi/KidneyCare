@@ -22,7 +22,11 @@ const query = gql`
           foodId
           label
           nutrients {
+            CHOCDF
             ENERC_KCAL
+            FAT
+            FIBTG
+            PROCNT
           }
         }
       }
@@ -33,7 +37,7 @@ const query = gql`
 const SearchScreen = () => {
   const [search, setSearch] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(search);
-  
+
   const [runSearch, { data, loading, error }] = useLazyQuery(query, {
     variables: { ingr: "" },
   });
@@ -63,6 +67,10 @@ const SearchScreen = () => {
       "Pressed item:",
       item.food.label,
       item.food.nutrients.ENERC_KCAL,
+      item.food.nutrients.CHOCDF,
+      item.food.nutrients.FAT,
+      item.food.nutrients.FIBTG,
+      item.food.nutrients.PROCNT,
       item.food.foodId
     );
     router.push({
@@ -71,6 +79,10 @@ const SearchScreen = () => {
         food_id: item.food.foodId,
         label: item.food.label,
         kcal: item.food.nutrients.ENERC_KCAL,
+        cholesterol: item.food.nutrients.CHOCDF,
+        fat: item.food.nutrients.FAT,
+        fiber: item.food.nutrients.FIBTG,
+        protein: item.food.nutrients.PROCNT,
       },
     });
   };
@@ -100,7 +112,11 @@ const SearchScreen = () => {
 
         <FlatList
           data={items}
-          contentContainerStyle={{ paddingHorizontal: 8, gap: 13, paddingBottom: 75 }}
+          contentContainerStyle={{
+            paddingHorizontal: 8,
+            gap: 13,
+            paddingBottom: 75,
+          }}
           style={{ margin: 0 }}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (

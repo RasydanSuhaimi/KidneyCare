@@ -24,6 +24,10 @@ const INSERT_FOOD_LOG_MUTATION = gql`
     $user_id: String!
     $mealtype: String!
     $serving: Int!
+    $protein: Float
+    $cholesterol: Float
+    $fat: Float
+    $fiber: Float
   ) {
     insertFood_log(
       food_id: $food_id
@@ -32,6 +36,10 @@ const INSERT_FOOD_LOG_MUTATION = gql`
       user_id: $user_id
       mealtype: $mealtype
       serving: $serving
+      protein: $protein
+      cholesterol: $cholesterol
+      fat: $fat
+      fiber: $fiber
     ) {
       created_at
       food_id
@@ -41,6 +49,10 @@ const INSERT_FOOD_LOG_MUTATION = gql`
       user_id
       mealtype
       serving
+      protein
+      cholesterol
+      fat
+      fiber
     }
   }
 `;
@@ -48,7 +60,7 @@ const INSERT_FOOD_LOG_MUTATION = gql`
 const AddFood = () => {
   const route = useRoute();
   const router = useRouter();
-  const { food_id, label, kcal } = route.params;
+  const { food_id, label, kcal, protein, cholesterol, fat, fiber } = route.params;
 
   const [logFood, { loading }] = useMutation(INSERT_FOOD_LOG_MUTATION, {
     refetchQueries: ["foodLogsForDate"],
@@ -96,6 +108,10 @@ const AddFood = () => {
             user_id: userId,
             mealtype: mealType,
             serving: parseInt(serving, 10),
+            protein,
+            cholesterol,
+            fat,
+            fiber,
           },
         });
         resetForm();

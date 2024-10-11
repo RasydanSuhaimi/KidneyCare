@@ -9,7 +9,7 @@ const CustomCircleProgress = ({ progress, size, strokeWidth }) => {
 
   return (
     <View
-      style={{ alignItems: "center", justifyContent: "center", marginLeft: 20 }}
+      style={{ alignItems: "center", justifyContent: "center", marginLeft: 15 }}
     >
       <Svg height={size} width={size}>
         <Circle
@@ -32,7 +32,7 @@ const CustomCircleProgress = ({ progress, size, strokeWidth }) => {
           strokeLinecap="round"
         />
       </Svg>
-      <Text style={{ position: "absolute", fontSize: 20 }}>
+      <Text style={{ position: "absolute", fontSize: 17 }}>
         {`${Math.round(progress * 100)}%`} {/* Display Percentage */}
       </Text>
     </View>
