@@ -5,7 +5,7 @@ import Entypo from "react-native-vector-icons/Entypo"; // Import Entypo icons
 
 const ICON_SIZE = {
   default: 25,
-  large: 70,
+  large: 75,
 };
 
 const TabIcon = ({ iconSet, iconName, color, name, focused, onPress }) => {
@@ -86,12 +86,12 @@ const TabsLayout = () => {
         tabBarStyle: {
           backgroundColor: "#FFFFFF",
           position: "absolute",
-          bottom: 20,
-          marginHorizontal: 12,
-          borderRadius: 35,
-          height: 75,
-          paddingBottom: 0,
-          paddingTop: 0,
+          //bottom: 20,
+          //marginHorizontal: 12,
+          borderRadius: 25,
+          height: 95,
+          paddingBottom: 15,
+          //paddingTop: 0,
           justifyContent: "center",
           flexDirection: "row",
           shadowColor: "#004365",

@@ -30,7 +30,7 @@ const HorizontalDatePicker = ({
     }
   }, [selectedDate, dateList]); // Run when selectedDate or dateList changes
 
-  const itemHeight = 110;
+  const itemHeight = 100;
   const itemWidth = 70;
 
   return (
