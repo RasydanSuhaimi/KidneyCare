@@ -20,9 +20,7 @@ const CustomButton = ({
       }`}
       disabled={isLoading}
     >
-      <Text className={`text-white font-psemibold text-lg`}>
-        {title}
-      </Text>
+      <Text className={`text-white font-psemibold text-lg`}>{title}</Text>
     </TouchableOpacity>
   );
 };

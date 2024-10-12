@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
-import { ScrollView, Text, View, Image } from "react-native";
+import { Text, View, Image } from "react-native";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
@@ -46,8 +46,8 @@ export default function App() {
         </View>
 
         <CustomButton
-          title="Continue with Email"
-          handlePress={() => router.push("/sign-in")}
+          title="Continue"
+          handlePress={() => router.push("onboarding")}
           containerStyles="w-full mt-7"
         />
       </View>
