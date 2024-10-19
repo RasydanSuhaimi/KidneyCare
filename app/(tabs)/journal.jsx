@@ -1,4 +1,13 @@
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  Platform,
+  Modal,
+} from "react-native";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState, useMemo } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -9,10 +18,10 @@ import { Swipeable } from "react-native-gesture-handler";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useNavigation } from "@react-navigation/native";
 import LoadingIndicator from "../../components/LoadingIndicator";
-
 import FoodLogListItem from "../../components/FoodLogListItem";
 import CalorieProgress from "../../components/CalorieProgress";
 import HorizontalDatePicker from "../../components/HorizontalDatePicker";
+import MonthPicker from "../../components/MonthPicker";
 
 const QUERY_FOOD_LOGS = gql`
   query foodLogsForDate($date: Date!, $user_id: String!) {
@@ -43,7 +52,8 @@ const Journal = () => {
   const [loadingModalVisible, setLoadingModalVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState(
     dayjs().format("YYYY-MM-DD")
-  ); // State for selected date
+  );
+  const [selectedMonth, setSelectedMonth] = useState(dayjs().format("YYYY-MM"));
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -55,11 +65,11 @@ const Journal = () => {
     };
 
     fetchUserId();
-  }, []); // Empty dependency array to run only once
+  }, []);
 
   const { data, loading, error, refetch } = useQuery(QUERY_FOOD_LOGS, {
     variables: {
-      date: selectedDate, // Use selectedDate for querying food logs
+      date: selectedDate,
       user_id: userId,
     },
     skip: !userId,
@@ -78,10 +88,6 @@ const Journal = () => {
     },
   });
 
-  useEffect(() => {
-    setLoadingModalVisible(loading);
-  }, [loading]);
-
   const handleRefresh = async () => {
     setRefreshing(true);
     await refetch();
@@ -90,8 +96,8 @@ const Journal = () => {
 
   if (error) {
     return (
-      <SafeAreaView className="bg-gray-300 h-full">
-        <Text className="text-center text-red-500">
+      <SafeAreaView style={styles.errorContainer}>
+        <Text style={styles.errorText}>
           Failed to fetch data. Please try again.
         </Text>
       </SafeAreaView>
@@ -125,10 +131,10 @@ const Journal = () => {
   const dataList = useMemo(
     () => createDataList(data?.foodLogsForDate || []),
     [data]
-  ); // Ensure this is defined before use
+  );
 
   const handleDeleteLog = (id) => {
-    setTimeout(() => deleteFoodLog({ variables: { id } }), 100); // Delay for smoother UX
+    setTimeout(() => deleteFoodLog({ variables: { id } }), 100);
   };
 
   const totalCalories = useMemo(() => {
@@ -140,11 +146,11 @@ const Journal = () => {
     }, 0);
   }, [dataList]);
 
-  const targetCalories = 2000; // Set your target calorie limit here
+  const targetCalories = 2000;
 
-  const generateDates = (currentDate) => {
-    const startOfMonth = dayjs(currentDate).startOf("month");
-    const endOfMonth = dayjs(currentDate).endOf("month");
+  const generateDatesForMonth = (month) => {
+    const startOfMonth = dayjs(month).startOf("month");
+    const endOfMonth = dayjs(month).endOf("month");
 
     const dates = [];
     for (
@@ -162,15 +168,16 @@ const Journal = () => {
     return dates;
   };
 
-  const dateList = generateDates(selectedDate);
-
+  const dateList = generateDatesForMonth(selectedMonth);
   return (
-    <SafeAreaView
-      className="bg-secondary flex-1"
-      edges={["top", "left", "right"]}
-    >
-      <View className="px-4 bg-secondary">
-        {/* Container for Horizontal Date Picker */}
+    <SafeAreaView style={styles.container}>
+      <View style={styles.datePickerContainer}>
+        <MonthPicker
+          selectedMonth={selectedMonth}
+          setSelectedMonth={setSelectedMonth}
+          setSelectedDate={setSelectedDate}
+          styles={styles}
+        />
         <HorizontalDatePicker
           dateList={dateList}
           selectedDate={selectedDate}
@@ -179,17 +186,10 @@ const Journal = () => {
         />
       </View>
 
-      {/* Progress Circle Container */}
-      <View
-        className="flex-1 px-5 space-y-5 bg-gray-300"
-        style={{
-          borderTopLeftRadius: 25,
-          borderTopRightRadius: 25,
-        }}
-      >
+      <View style={styles.progressContainer}>
         <FlatList
           data={dataList}
-          contentContainerStyle={{ paddingBottom: 110, marginTop: 20 }}
+          contentContainerStyle={styles.flatListContent}
           showsVerticalScrollIndicator={false}
           refreshing={refreshing}
           onRefresh={handleRefresh}
@@ -203,21 +203,10 @@ const Journal = () => {
           renderItem={({ item }) => {
             if (item.type === "header") {
               return (
-                <View
-                  className="bg-white p-3 mb-5"
-                  style={{ borderRadius: 25 }}
-                >
-                  <View className="flex-row justify-between items-center">
-                    <Text
-                      style={{ fontSize: 17, fontWeight: "600" }}
-                      className="text-left p-3 mb-2"
-                    >
-                      {item.mealType}
-                    </Text>
-                    <Text
-                      style={{ fontSize: 16, fontWeight: "600" }}
-                      className="text-right p-3 color-secondary mb-2"
-                    >
+                <View style={styles.headerContainer}>
+                  <View style={styles.headerContent}>
+                    <Text style={styles.mealTypeText}>{item.mealType}</Text>
+                    <Text style={styles.kcalText}>
                       {item.logs.reduce((sum, log) => sum + log.kcal, 0)} kcal
                     </Text>
                   </View>
@@ -225,17 +214,10 @@ const Journal = () => {
                   {item.logs.length > 0 ? (
                     item.logs.map((log, index) => (
                       <Swipeable
-                        key={log.id} // Use log.id as unique key for Swipeable
+                        key={log.id}
                         renderRightActions={() => (
                           <TouchableOpacity
-                            style={{
-                              backgroundColor: "red",
-                              justifyContent: "center",
-                              alignItems: "center",
-                              borderRadius: 15,
-                              width: 60,
-                              height: 60,
-                            }}
+                            style={styles.deleteButton}
                             onPress={() => handleDeleteLog(log.id)}
                           >
                             <MaterialIcons
@@ -246,7 +228,7 @@ const Journal = () => {
                           </TouchableOpacity>
                         )}
                       >
-                        <View className="mb-2">
+                        <View style={styles.logItem}>
                           <FoodLogListItem
                             label={log.label}
                             serving={parseFloat(log.serving)}
@@ -254,13 +236,13 @@ const Journal = () => {
                           />
 
                           {index !== item.logs.length - 1 && (
-                            <View className="border-b border-gray-300 mt-1" />
+                            <View style={styles.separator} />
                           )}
                         </View>
                       </Swipeable>
                     ))
                   ) : (
-                    <Text className="text-gray-500 text-center p-3">
+                    <Text style={styles.noEntriesText}>
                       No entries for {item.mealType}.
                     </Text>
                   )}
@@ -277,5 +259,85 @@ const Journal = () => {
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#8B7FF5",
+  },
+  datePickerContainer: {
+    paddingHorizontal: 16,
+    backgroundColor: "#8B7FF5",
+  },
+  progressContainer: {
+    flex: 1,
+    backgroundColor: "#f8f8fa",
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+  },
+  flatListContent: {
+    paddingBottom: 55,
+    padding: 20,
+    shadowColor: "black",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+  },
+  headerContainer: {
+    backgroundColor: "white",
+    padding: 12,
+    marginBottom: 20,
+    borderRadius: 25,
+  },
+  headerContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  mealTypeText: {
+    fontSize: 17,
+    fontWeight: "600",
+    textAlign: "left",
+    paddingHorizontal: 12,
+    padding: 20,
+  },
+  kcalText: {
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "right",
+    paddingHorizontal: 12,
+    color: "#8B7FF5",
+  },
+  deleteButton: {
+    backgroundColor: "red",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 15,
+    width: 60,
+    height: 60,
+  },
+  logItem: {
+    marginBottom: 8,
+  },
+  separator: {
+    borderBottomColor: "#D1D5DB",
+    borderBottomWidth: 1,
+    marginVertical: 6,
+  },
+  noEntriesText: {
+    textAlign: "center",
+    color: "#6B7280",
+    padding: 5,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFEDD5",
+  },
+  errorText: {
+    color: "#FF0000",
+  },
+});
 
 export default Journal;

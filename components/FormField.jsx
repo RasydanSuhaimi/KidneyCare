@@ -1,12 +1,16 @@
-import { View, Text, TextInput, Image, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
 import React, { useState } from "react";
-
 import AntDesign from "@expo/vector-icons/AntDesign"; // Import AntDesign
 
 const FormField = ({
   title,
   value,
-  placeholder,
   handleChangeText,
   otherStyles,
   secureTextEntry,
@@ -17,12 +21,10 @@ const FormField = ({
   const isPasswordField = title === "Password" || title === "Confirm Password";
 
   return (
-    <View className={`space-y-2 ${otherStyles}`}>
-      <View
-        className={`border-2 w-full h-16 px-6 border-white bg-white rounded-full focus:border-secondary items-center flex-row shadow`}
-      >
+    <View style={[styles.container, otherStyles]}>
+      <View style={styles.inputContainer}>
         <TextInput
-          className="flex-1 text-black font-psemibold text-base"
+          style={styles.input}
           value={value}
           placeholder={title}
           placeholderTextColor="#7b7b8b"
@@ -43,5 +45,31 @@ const FormField = ({
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: 8,
+  },
+  inputContainer: {
+    borderWidth: 2,
+    borderColor: "white",
+    backgroundColor: "white",
+    borderRadius: 100,
+    height: 64,
+    paddingHorizontal: 24,
+    flexDirection: "row",
+    alignItems: "center",
+    shadowColor: "black",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+  },
+  input: {
+    flex: 1,
+    color: "black",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+});
 
 export default FormField;

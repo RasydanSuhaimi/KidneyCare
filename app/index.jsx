@@ -1,9 +1,9 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
-import { Text, View, Image } from "react-native";
+import { Text, View, Image, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { images } from "../constants";
 import CustomButton from "../components/CustomButton";
@@ -22,33 +22,30 @@ export default function App() {
   }, []);
 
   return (
-    <SafeAreaView className="bg-gray-300 flex-1">
-      <View className="w-full justify-center items-center flex-grow px-4">
+    <SafeAreaView style={styles.container}>
+      <View style={styles.innerContainer}>
         <Image
           source={images.logo}
-          className="w-[130px] h-[84px]"
+          style={styles.logo}
           resizeMode="contain"
         />
         <Image
           source={images.cards}
-          className="max-w-[380px] w-full h-[300px]"
+          style={styles.cards}
           resizeMode="contain"
         />
 
-        <View className="relative mt-5">
-          <Text className="text-2xl font-bold text-center text-gray-800">
+        <View style={styles.welcomeContainer}>
+          <Text style={styles.welcomeText}>
             Welcome to{" "}
-            <Text className="text-2xl font-bold text-center text-secondary">
-              KidneyCare
-            </Text>
-            , your trusted guide to a healthier kidney-friendly diet.
+            <Text style={styles.highlightText}>KidneyCare</Text>, your trusted guide to a healthier kidney-friendly diet.
           </Text>
         </View>
 
         <CustomButton
           title="Continue"
           handlePress={() => router.push("onboarding")}
-          containerStyles="w-full mt-7"
+          containerStyles={styles.buttonContainer}
         />
       </View>
 
@@ -56,3 +53,43 @@ export default function App() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: "#f8f8fa",
+    flex: 1,
+  },
+  innerContainer: {
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexGrow: 1,
+    paddingHorizontal: 16,
+  },
+  logo: {
+    width: 130,
+    height: 84,
+  },
+  cards: {
+    maxWidth: 380,
+    width: '100%',
+    height: 300,
+  },
+  welcomeContainer: {
+    position: 'relative',
+    marginTop: 20,
+  },
+  welcomeText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#4B5563', 
+  },
+  highlightText: {
+    color: '#8B7FF5', 
+  },
+  buttonContainer: {
+    width: '100%',
+    marginTop: 28,
+  },
+});

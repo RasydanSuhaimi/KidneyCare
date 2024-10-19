@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity } from "react-native";
+import { Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Tabs, useRouter } from "expo-router";
 import AntDesign from "react-native-vector-icons/AntDesign"; // Import AntDesign icons
 import Entypo from "react-native-vector-icons/Entypo"; // Import Entypo icons
@@ -21,16 +21,19 @@ const TabIcon = ({ iconSet, iconName, color, name, focused, onPress }) => {
   return (
     <TouchableOpacity
       onPress={onPress}
-      className="items-center gap-2"
-      style={name === "" ? { transform: [{ translateY: -15 }] } : {}}
+      style={[
+        styles.iconContainer,
+        name === "" && styles.liftedIcon, 
+      ]}
     >
       {renderIcon()}
-
-      {/* Show the name only for the non-SearchFood icons */}
       {name !== "" && (
         <Text
-          className={`${focused ? "font-psemibold" : "font-pregular"} text-xs`}
-          style={{ color }}
+          style={[
+            styles.tabText,
+            focused ? styles.tabTextFocused : styles.tabTextUnfocused,
+            { color },
+          ]}
         >
           {name}
         </Text>
@@ -83,23 +86,7 @@ const TabsLayout = () => {
         tabBarShowLabel: false,
         tabBarActiveTintColor: "#8B7FF5",
         tabBarInactiveTintColor: "#989B9A",
-        tabBarStyle: {
-          backgroundColor: "#FFFFFF",
-          position: "absolute",
-          //bottom: 20,
-          //marginHorizontal: 12,
-          borderRadius: 25,
-          height: 95,
-          paddingBottom: 15,
-          //paddingTop: 0,
-          justifyContent: "center",
-          flexDirection: "row",
-          shadowColor: "#004365",
-          shadowOffset: { width: 0, height: 0 },
-          shadowOpacity: 0.1,
-          shadowRadius: 5,
-          elevation: 5,
-        },
+        tabBarStyle: styles.tabBar,
       }}
     >
       {screens.map((screen) => (
@@ -125,5 +112,40 @@ const TabsLayout = () => {
     </Tabs>
   );
 };
+
+const styles = StyleSheet.create({
+  tabBar: {
+    backgroundColor: "#FFFFFF",
+    position: "absolute",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    height: 95,
+    paddingBottom: 15,
+    justifyContent: "center",
+    flexDirection: "row",
+    shadowColor: "#004365",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  iconContainer: {
+    alignItems: "center",
+    gap: 2,
+  },
+  liftedIcon: {
+    transform: [{ translateY: -15 }],
+  },
+  tabText: {
+    textAlign: "center",
+    fontSize: 12,
+  },
+  tabTextFocused: {
+    fontWeight: "600",
+  },
+  tabTextUnfocused: {
+    fontWeight: "400",
+  },
+});
 
 export default TabsLayout;

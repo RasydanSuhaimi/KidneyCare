@@ -1,21 +1,15 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StatusBar } from "expo-status-bar";
-import {
-  Text,
-  View,
-  Image,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { Text, View, Image, Alert, ActivityIndicator } from "react-native";
 import React, { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, router } from "expo-router";
-
 import { images } from "../../constants";
 import FormField from "../../components/FormField";
 import CustomButton from "../../components/CustomButton";
 import { gql, useLazyQuery } from "@apollo/client";
 import { useUser } from "../../context/UserContext";
+import { StyleSheet } from "react-native";
 
 const SIGN_IN = gql`
   query SignIn($email: String!, $password: String!) {
@@ -28,7 +22,7 @@ const SIGN_IN = gql`
 `;
 
 const SignIn = () => {
-  const { setUserId } = useUser(); // Access the context to set user ID
+  const { setUserId } = useUser();
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -36,7 +30,6 @@ const SignIn = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [signInUser] = useLazyQuery(SIGN_IN);
 
-  // Check if user is already logged in
   useEffect(() => {
     const checkUserSession = async () => {
       const userId = await AsyncStorage.getItem("user_id");
@@ -73,23 +66,17 @@ const SignIn = () => {
   };
 
   return (
-    <SafeAreaView className="bg-gray-300 h-full">
-      <View className="w-full justify-center min-h-[80vh] p-6">
-        <Image
-          source={images.logo}
-          resizeMode="contain"
-          className="w-[115px] h-[35px]"
-        />
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <Image source={images.logo} resizeMode="contain" style={styles.logo} />
 
-        <Text className="text-2xl text-black font-semibold mt-10">
-          Log in to KidneyCare
-        </Text>
+        <Text style={styles.title}>Log in to KidneyCare</Text>
 
         <FormField
           title="Email"
           value={form.email}
           handleChangeText={(e) => setForm({ ...form, email: e })}
-          otherStyles="mt-7"
+          otherStyles={styles.formField}
           keyboardType="email-address"
           autoCapitalize="none"
           autoCompleteType="email"
@@ -99,43 +86,29 @@ const SignIn = () => {
           title="Password"
           value={form.password}
           handleChangeText={(e) => setForm({ ...form, password: e })}
-          otherStyles="mt-7"
-          secureTextEntry // Hide password input
+          otherStyles={styles.formField}
+          secureTextEntry
         />
 
         <CustomButton
           title="Sign in"
           handlePress={submit}
-          containerStyles="mt-7"
+          containerStyles={styles.button}
           isLoading={isSubmitting}
         />
 
         {isSubmitting && (
-          <View className="absolute top-0 left-0 right-0 bottom-0  z-10 flex items-center justify-center">
-            <View
-              style={{
-                width: 100,
-                height: 100,
-                borderRadius: 20,
-                backgroundColor: "#333",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
+          <View style={styles.loadingContainer}>
+            <View style={styles.loadingIndicator}>
               <ActivityIndicator size="large" color="#fff" />
-              <Text style={{ color: "#fff", marginTop: 10 }}>Loading</Text>
+              <Text style={styles.loadingText}>Loading</Text>
             </View>
           </View>
         )}
 
-        <View className="justify-center pt-5 flex-row gap-2">
-          <Text className="text-l text-black font-pregular">
-            Don't have an account?
-          </Text>
-          <Link
-            href="/sign-up"
-            className="text-l text-secondary font-psemibold"
-          >
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Don't have an account?</Text>
+          <Link href="/sign-up" style={styles.signUpLink}>
             Sign Up
           </Link>
         </View>
@@ -145,5 +118,71 @@ const SignIn = () => {
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: "#f8f8fa", 
+    flex: 1,
+  },
+  content: {
+    justifyContent: "center",
+    minHeight: "80%",
+    padding: 24,
+  },
+  logo: {
+    width: 115,
+    height: 35,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: "black",
+    marginTop: 20,
+    marginBottom: 15,
+  },
+  formField: {
+    marginTop: 20,
+  },
+  button: {
+    marginTop: 20,
+  },
+  loadingContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loadingIndicator: {
+    width: 100,
+    height: 100,
+    borderRadius: 20,
+    backgroundColor: "#333",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    color: "#fff",
+    marginTop: 10,
+  },
+  footer: {
+    justifyContent: "center",
+    paddingTop: 20,
+    flexDirection: "row",
+  },
+  footerText: {
+    fontSize: 16,
+    color: "black",
+  },
+  signUpLink: {
+    fontSize: 16,
+    color: "#8B7FF5", 
+    fontWeight: "600",
+    marginLeft: 5,
+  },
+});
 
 export default SignIn;

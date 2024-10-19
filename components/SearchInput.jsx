@@ -1,12 +1,12 @@
-import { View, TextInput } from "react-native";
+import { View, TextInput, StyleSheet } from "react-native";
 import React from "react";
 import { AntDesign } from "@expo/vector-icons";
 
 const SearchInput = ({ value, onChangeText, onSubmitEditing }) => {
   return (
-    <View className="border h-14 px-6 border-gray-300 bg-white rounded-2xl shadow mt-2 mx-2 flex-row items-center">
+    <View style={styles.container}>
       <TextInput
-        className="flex-1 text-black font-pregular text-base mt-0.5"
+        style={styles.input}
         value={value}
         onChangeText={onChangeText}
         placeholder="Search..."
@@ -15,11 +15,36 @@ const SearchInput = ({ value, onChangeText, onSubmitEditing }) => {
         onSubmitEditing={onSubmitEditing}
         blurOnSubmit={false}
         accessibilityLabel="Search input"
-        //accessible={true} // Explicitly indicate the component is accessible
       />
       <AntDesign name="search1" size={24} color="#7b7b8b" />
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    borderWidth: 1,
+    height: 60,
+    paddingHorizontal: 24,
+    borderColor: "#f8f8fa",
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    shadowColor: "black",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    marginTop: 8,
+    marginBottom: 20,
+    marginHorizontal: 8,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  input: {
+    flex: 1,
+    color: "black",
+    fontSize: 16,
+    marginTop: 2,
+  },
+});
 
 export default SearchInput;

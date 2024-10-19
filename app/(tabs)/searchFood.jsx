@@ -6,6 +6,7 @@ import {
   Text,
   ActivityIndicator,
   TouchableOpacity,
+  StyleSheet,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
@@ -63,16 +64,6 @@ const SearchScreen = () => {
   const items = data?.search?.hints || [];
 
   const handleItemPress = (item) => {
-    console.log(
-      "Pressed item:",
-      item.food.label,
-      item.food.nutrients.ENERC_KCAL,
-      item.food.nutrients.CHOCDF,
-      item.food.nutrients.FAT,
-      item.food.nutrients.FIBTG,
-      item.food.nutrients.PROCNT,
-      item.food.foodId
-    );
     router.push({
       pathname: "/addFood",
       params: {
@@ -88,8 +79,8 @@ const SearchScreen = () => {
   };
 
   return (
-    <SafeAreaView className="bg-gray-300 flex-1">
-      <View className="flex-1 justify-center px-3 space-y-5">
+    <SafeAreaView style={styles.safeAreaView}>
+      <View style={styles.container}>
         <SearchInput
           value={search}
           onChangeText={setSearch}
@@ -99,25 +90,20 @@ const SearchScreen = () => {
         {loading && <ActivityIndicator />}
 
         {error && (
-          <Text className="text-center text-red-500">
+          <Text style={styles.errorText}>
             Failed to search. Please try again.
           </Text>
         )}
 
         {items.length === 0 && !loading && !error && (
-          <View className="flex-1 items-center font-pmedium">
+          <View style={styles.emptyState}>
             <Text>Search a food.</Text>
           </View>
         )}
 
         <FlatList
           data={items}
-          contentContainerStyle={{
-            paddingHorizontal: 8,
-            gap: 13,
-            paddingBottom: 75,
-          }}
-          style={{ margin: 0 }}
+          contentContainerStyle={styles.flatListContent}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <TouchableOpacity onPress={() => handleItemPress(item)}>
@@ -131,5 +117,31 @@ const SearchScreen = () => {
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  safeAreaView: {
+    backgroundColor: "#f8f8fa",
+    flex: 1,
+  },
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    padding: 10,
+  },
+  errorText: {
+    textAlign: "center",
+    color: "#FF0000", 
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  flatListContent: {
+    padding: 8, 
+    paddingBottom: 75,
+    gap: 13,
+  },
+});
 
 export default SearchScreen;

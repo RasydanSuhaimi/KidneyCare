@@ -1,11 +1,11 @@
 import { StatusBar } from "expo-status-bar";
 import {
-
   Text,
   View,
   Image,
   Alert,
   ActivityIndicator,
+  StyleSheet
 } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -149,15 +149,15 @@ const SignUp = () => {
   };
 
   return (
-    <SafeAreaView className="bg-gray-300 h-full">
-      <View className="w-full justify-center min-h-[85vh] p-6">
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
         <Image
           source={images.logo}
           resizeMode="contain"
-          className="w-[115px] h-[35px]"
+          style={styles.logo}
         />
 
-        <Text className="text-2xl text-black font-semibold mt-10">
+        <Text style={styles.title}>
           Sign up to KidneyCare
         </Text>
 
@@ -165,14 +165,14 @@ const SignUp = () => {
           title="Username"
           value={form.username}
           handleChangeText={(e) => setForm({ ...form, username: e })}
-          otherStyles="mt-8"
+          otherStyles={styles.fieldSpacing}
         />
 
         <FormField
           title="Email"
           value={form.email}
           handleChangeText={(e) => setForm({ ...form, email: e })}
-          otherStyles="mt-6"
+          otherStyles={styles.fieldSpacing}
           keyboardType="email-address"
         />
 
@@ -180,7 +180,7 @@ const SignUp = () => {
           title="Password"
           value={form.password}
           handleChangeText={(e) => setForm({ ...form, password: e })}
-          otherStyles="mt-6"
+          otherStyles={styles.fieldSpacing}
           secureTextEntry
         />
 
@@ -188,42 +188,33 @@ const SignUp = () => {
           title="Confirm Password"
           value={form.confirmPassword}
           handleChangeText={(e) => setForm({ ...form, confirmPassword: e })}
-          otherStyles="mt-6"
+          otherStyles={styles.fieldSpacing}
           secureTextEntry
         />
 
         <CustomButton
           title="Sign Up"
           handlePress={submit}
-          containerStyles="mt-7"
+          containerStyles={styles.buttonSpacing}
           isLoading={isSubmitting}
         />
 
         {(isSubmitting || isChecking) && (
-          <View className="absolute top-0 left-0 right-0 bottom-0 z-10 flex items-center justify-center">
-            <View
-              style={{
-                width: 100,
-                height: 100,
-                borderRadius: 20,
-                backgroundColor: "#333",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
+          <View style={styles.loadingOverlay}>
+            <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#fff" />
-              <Text style={{ color: "#fff", marginTop: 10 }}>Loading</Text>
+              <Text style={styles.loadingText}>Loading</Text>
             </View>
           </View>
         )}
 
-        <View className="justify-center pt-5 flex-row gap-2">
-          <Text className="text-l text-black font-pregular">
+        <View style={styles.signInContainer}>
+          <Text style={styles.signInText}>
             Have an account?
           </Text>
           <Link
             href="/sign-in"
-            className="text-l text-secondary font-psemibold"
+            style={styles.signInLink}
           >
             Sign In
           </Link>
@@ -234,5 +225,72 @@ const SignUp = () => {
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  safeArea: {
+    backgroundColor: '#f8f8fa', 
+    flex: 1,
+  },
+  container: {
+    justifyContent: 'center',
+    minHeight: '85%',
+    padding: 24, 
+  },
+  logo: {
+    width: 115, 
+    height: 35, 
+  },
+  title: {
+    fontSize: 24, 
+    color: 'black',
+    fontWeight: '600', 
+    marginTop: 20, 
+    marginBottom: 15,
+  },
+  fieldSpacing: {
+    marginTop: 20,
+  },
+  buttonSpacing: {
+    marginTop: 20, 
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 20,
+    backgroundColor: "#333",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    color: "#fff",
+    marginTop: 10,
+  },
+  signInContainer: {
+    justifyContent: 'center',
+    paddingTop: 20, 
+    flexDirection: 'row',
+    gap: 8,
+  },
+  signInText: {
+    fontSize: 16,
+    color: 'black',
+    fontWeight: '400', 
+  },
+  signInLink: {
+    fontSize: 16, 
+    color: '#8B7FF5',
+    fontWeight: '600', 
+  },
+});
 
 export default SignUp;

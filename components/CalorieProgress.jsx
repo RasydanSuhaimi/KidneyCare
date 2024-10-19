@@ -1,5 +1,11 @@
 import React, { useRef, useEffect } from "react";
-import { View, Text, TouchableOpacity, Animated } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Animated,
+  StyleSheet,
+} from "react-native";
 import Svg, { Circle } from "react-native-svg";
 import { Entypo } from "@expo/vector-icons";
 import { Dimensions } from "react-native";
@@ -34,26 +40,10 @@ const CalorieProgress = ({ totalCalories, targetCalories, onNavigate }) => {
   });
 
   return (
-    <View className="flex items-center mb-5">
-      <View
-        style={{
-          width: deviceWidth - 40,
-          height: 110,
-          borderRadius: 25,
-          backgroundColor: "white",
-          flexDirection: "row",
-          alignItems: "center",
-          paddingHorizontal: 10,
-        }}
-      >
+    <View style={styles.container}>
+      <View style={styles.progressContainer}>
         {/* Custom Circle Progress */}
-        <View
-          style={{
-            alignItems: "center",
-            justifyContent: "center",
-            marginLeft: 15,
-          }}
-        >
+        <View style={styles.circleContainer}>
           <Svg height={size} width={size}>
             {/* Background Circle */}
             <Circle
@@ -78,39 +68,69 @@ const CalorieProgress = ({ totalCalories, targetCalories, onNavigate }) => {
             />
           </Svg>
           {/* Progress percentage */}
-          <Text style={{ position: "absolute", fontSize: 17 }}>
+          <Text style={styles.progressText}>
             {`${Math.round(progress * 100)}%`}
           </Text>
         </View>
 
         {/* Calorie Information */}
-        <View style={{ marginLeft: 20 }}>
-          <Text style={{ fontSize: 15, fontWeight: "600" }}>
+        <View>
+          <Text style={styles.calorieText}>
             {totalCalories} of {targetCalories} Cal
           </Text>
-          <Text style={{ fontSize: 13, paddingTop: 5 }}>
+          <Text style={styles.addCaloriesText}>
             Add more calories to your diet
           </Text>
         </View>
 
         {/* Navigation Button */}
-        <TouchableOpacity
-          onPress={onNavigate}
-          style={{
-            width: 45,
-            height: 45,
-            borderRadius: 30,
-            backgroundColor: "#E5DFFF",
-            justifyContent: "center",
-            alignItems: "center",
-            marginLeft: 20,
-          }}
-        >
+        <TouchableOpacity onPress={onNavigate} style={styles.navigateButton}>
           <Entypo name="bar-graph" size={20} color="#8B7FF5" />
         </TouchableOpacity>
       </View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    marginBottom: 20,
+  },
+  progressContainer: {
+    width: deviceWidth - 40,
+    height: 110,
+    borderRadius: 25,
+    backgroundColor: "white",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 18,
+  },
+  circleContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  progressText: {
+    position: "absolute",
+    fontSize: 17,
+  },
+  calorieText: {
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  addCaloriesText: {
+    fontSize: 13,
+    paddingTop: 5,
+  },
+  navigateButton: {
+    width: 45,
+    height: 45,
+    borderRadius: 30,
+    backgroundColor: "#E5DFFF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
 
 export default CalorieProgress;
