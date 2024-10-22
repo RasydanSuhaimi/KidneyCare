@@ -1,7 +1,8 @@
+import React from "react"; // Make sure to import React
 import { View, Text, StyleSheet } from "react-native";
 import PropTypes from "prop-types";
 
-const FoodLogListItem = ({ label, serving, kcal }) => {
+const FoodLogListItem = React.memo(({ label, serving, kcal }) => {
   return (
     <View
       style={styles.container}
@@ -14,7 +15,7 @@ const FoodLogListItem = ({ label, serving, kcal }) => {
       <Text style={styles.calories}>{kcal} cal</Text>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

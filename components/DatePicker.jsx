@@ -11,54 +11,62 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import dayjs from "dayjs";
 
-const MonthPicker = ({ selectedMonth, setSelectedMonth, setSelectedDate }) => {
-  const [showMonthPicker, setShowMonthPicker] = useState(false);
+const DatePicker = ({ selectedDate, setSelectedDate, showMonthYearOnly, placeholder  }) => {
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [tempSelectedDate, setTempSelectedDate] = useState(new Date());
 
-  // Handle date change on Android
-  const onMonthChangeAndroid = (event, date) => {
-    setShowMonthPicker(false);
+  const onDateChangeAndroid = (event, date) => {
+    setShowDatePicker(false);
     if (date) {
-      const newMonth = dayjs(date).format("YYYY-MM");
-      setSelectedMonth(newMonth);
-      setSelectedDate(dayjs(date).format("YYYY-MM-DD"));
+      setSelectedDate(
+        dayjs(date).format(showMonthYearOnly ? "YYYY-MM" : "YYYY-MM-DD")
+      );
     }
   };
 
-  // Handle date change on iOS
-  const onMonthChangeIOS = (event, date) => {
+  const onDateChangeIOS = (event, date) => {
     if (date) {
       setTempSelectedDate(date);
     }
   };
 
-  // Confirm date selection on iOS after "Done" button is pressed
   const handleConfirmDateIOS = () => {
-    setShowMonthPicker(false);
-    const newMonth = dayjs(tempSelectedDate).format("YYYY-MM");
-    setSelectedMonth(newMonth);
-    setSelectedDate(dayjs(tempSelectedDate).format("YYYY-MM-DD"));
+    setShowDatePicker(false);
+    setSelectedDate(
+      dayjs(tempSelectedDate).format(
+        showMonthYearOnly ? "YYYY-MM" : "YYYY-MM-DD"
+      )
+    );
   };
 
-  const showDatePicker = () => {
-    setShowMonthPicker(true);
+  const showDatePickerModal = () => {
+    setShowDatePicker(true);
   };
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        onPress={showDatePicker}
-        style={styles.selectMonthButton}
+        onPress={showDatePickerModal}
+        style={styles.selectDateButton}
       >
-        <Text style={styles.selectMonthText}>
-          {dayjs(selectedMonth).format("MMMM YYYY")}
+        <Text
+          style={[
+            styles.selectDateText,
+            { color: selectedDate ? "black" : "#7b7b8b" },
+          ]}
+        >
+          {selectedDate
+            ? dayjs(selectedDate).format(
+                showMonthYearOnly ? "MMMM YYYY" : "DD MMMM YYYY"
+              )
+            : placeholder}
         </Text>
         <AntDesign name="caretdown" size={15} color="white" />
       </TouchableOpacity>
 
-      {Platform.OS === "ios" && showMonthPicker && (
+      {Platform.OS === "ios" && showDatePicker && (
         <Modal
-          visible={showMonthPicker}
+          visible={showDatePicker}
           transparent={true}
           animationType="slide"
         >
@@ -68,7 +76,7 @@ const MonthPicker = ({ selectedMonth, setSelectedMonth, setSelectedDate }) => {
                 value={tempSelectedDate}
                 mode="date"
                 display="spinner"
-                onChange={onMonthChangeIOS}
+                onChange={onDateChangeIOS}
                 textColor="black"
               />
               <TouchableOpacity
@@ -82,12 +90,12 @@ const MonthPicker = ({ selectedMonth, setSelectedMonth, setSelectedDate }) => {
         </Modal>
       )}
 
-      {Platform.OS === "android" && showMonthPicker && (
+      {Platform.OS === "android" && showDatePicker && (
         <DateTimePicker
           value={new Date()}
           mode="date"
           display="calendar"
-          onChange={onMonthChangeAndroid}
+          onChange={onDateChangeAndroid}
         />
       )}
     </View>
@@ -96,24 +104,28 @@ const MonthPicker = ({ selectedMonth, setSelectedMonth, setSelectedDate }) => {
 
 const styles = StyleSheet.create({
   container: {
-    justifyContent: "center",
-    alignItems: "center",
+    marginBottom: 8,
   },
-  selectMonthButton: {
-    backgroundColor: "#8B7FF5",
-    borderRadius: 10,
-    marginBottom: 10,
-    width: 150,
+  selectDateButton: {
+    borderWidth: 2,
+    borderColor: "white",
+    backgroundColor: "white",
+    borderRadius: 100,
+    height: 64,
+    paddingHorizontal: 24,
     flexDirection: "row",
-    justifyContent: "center",
     alignItems: "center",
+    shadowColor: "black",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
   },
-  selectMonthText: {
-    color: "white",
-    fontSize: 15,
-    marginRight: 5,
+  selectDateText: {
+    flex: 1,
+    color: "black",
+    fontWeight: "600",
+    fontSize: 16,
   },
-
   modalContainer: {
     flex: 1,
     justifyContent: "flex-end",
@@ -137,7 +149,8 @@ const styles = StyleSheet.create({
   doneButtonText: {
     color: "white",
     fontWeight: "bold",
+    fontSize: 16,
   },
 });
 
-export default MonthPicker;
+export default DatePicker;

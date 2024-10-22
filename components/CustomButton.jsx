@@ -1,5 +1,6 @@
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
 import React from "react";
+import Animated from "react-native-reanimated";
 
 const CustomButton = ({
   title,

@@ -8,9 +8,6 @@ import {
 } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 import { Entypo } from "@expo/vector-icons";
-import { Dimensions } from "react-native";
-
-const deviceWidth = Dimensions.get("window").width;
 
 // Create AnimatedCircle from the Circle component
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -98,7 +95,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   progressContainer: {
-    width: deviceWidth - 40,
     height: 110,
     borderRadius: 25,
     backgroundColor: "white",

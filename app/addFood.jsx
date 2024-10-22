@@ -15,6 +15,7 @@ import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import MealPicker from "../components/MealPicker";
 import Box from "../components/Box";
+import moment from "moment-timezone";
 
 const INSERT_FOOD_LOG_MUTATION = gql`
   mutation MyMutation(
@@ -28,6 +29,7 @@ const INSERT_FOOD_LOG_MUTATION = gql`
     $cholesterol: Float
     $fat: Float
     $fiber: Float
+    $created_at: DateTime!
   ) {
     insertFood_log(
       food_id: $food_id
@@ -40,6 +42,7 @@ const INSERT_FOOD_LOG_MUTATION = gql`
       cholesterol: $cholesterol
       fat: $fat
       fiber: $fiber
+      created_at: $created_at
     ) {
       created_at
       food_id
@@ -60,7 +63,8 @@ const INSERT_FOOD_LOG_MUTATION = gql`
 const AddFood = () => {
   const route = useRoute();
   const router = useRouter();
-  const { food_id, label, kcal, protein, cholesterol, fat, fiber } = route.params;
+  const { food_id, label, kcal, protein, cholesterol, fat, fiber } =
+    route.params;
 
   const [logFood, { loading }] = useMutation(INSERT_FOOD_LOG_MUTATION, {
     refetchQueries: ["foodLogsForDate"],
@@ -100,6 +104,8 @@ const AddFood = () => {
 
     if (userId) {
       try {
+        const now = moment().tz("Asia/Kuala_Lumpur").format();
+        console.log("Created At:", now);
         await logFood({
           variables: {
             food_id,
@@ -112,6 +118,7 @@ const AddFood = () => {
             cholesterol,
             fat,
             fiber,
+            created_at: now,
           },
         });
         resetForm();

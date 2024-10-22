@@ -6,7 +6,7 @@ import {
   StyleSheet,
 } from "react-native";
 import React, { useState } from "react";
-import AntDesign from "@expo/vector-icons/AntDesign"; // Import AntDesign
+import AntDesign from "@expo/vector-icons/AntDesign";
 
 const FormField = ({
   title,
@@ -14,6 +14,9 @@ const FormField = ({
   handleChangeText,
   otherStyles,
   secureTextEntry,
+  placeholder,
+  keyboardType = "default", 
+  unit = "",
   ...props
 }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -26,11 +29,15 @@ const FormField = ({
         <TextInput
           style={styles.input}
           value={value}
-          placeholder={title}
+          placeholder={placeholder}
           placeholderTextColor="#7b7b8b"
           onChangeText={handleChangeText}
           secureTextEntry={isPasswordField && !showPassword}
+          keyboardType={keyboardType} 
+          {...props}
         />
+        {/* Display unit (like kg or cm) next to the input field */}
+        {unit ? <Text style={styles.unit}>{unit}</Text> : null}
 
         {isPasswordField && (
           <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
@@ -67,6 +74,12 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     color: "black",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  unit: {
+    marginLeft: 10,
+    color: "#7b7b8b",
     fontWeight: "600",
     fontSize: 16,
   },

@@ -7,19 +7,13 @@ import {
   StyleSheet,
 } from "react-native";
 
-const HorizontalDatePicker = ({
-  dateList,
-  selectedDate,
-  setSelectedDate,
-  onDateChange,
-}) => {
+const HorizontalDatePicker = ({ dateList, selectedDate, setSelectedDate }) => {
   // Create a ref for the FlatList
   const flatListRef = useRef(null);
 
   // Function to scroll to the selected index
   const handleDateSelect = (item, index) => {
-    setSelectedDate(item.fullDate); 
-    onDateChange();
+    setSelectedDate(item.fullDate);
 
     // Scroll to the selected index
     flatListRef.current.scrollToIndex({ index, animated: true });

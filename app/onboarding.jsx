@@ -11,6 +11,7 @@ import Animated, {
 import { PanGestureHandler } from "react-native-gesture-handler";
 import { useFocusEffect } from "@react-navigation/native"; 
 
+
 const onboardingSteps = [
   {
     icon: "list-check",
@@ -44,14 +45,14 @@ const Onboarding = () => {
     isNavigatingToSignIn.current = false;
   };
 
-  const onContinue = () => {
+  /**const onContinue = () => {
     const isLastScreen = screenIndex === onboardingSteps.length - 1;
     if (!isLastScreen) {
       setScreenIndex(screenIndex + 1);
     } else {
       endOnboarding();
     }
-  };
+  };**/
 
   const endOnboarding = () => {
     if (!isNavigatingToSignIn.current) {
@@ -84,7 +85,6 @@ const Onboarding = () => {
     swipeActive.current = false;
   };
 
-  // Reset the onboarding when the screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
       resetOnboarding();
@@ -148,7 +148,7 @@ const Onboarding = () => {
             </View>
           </View>
 
-          <StatusBar style="dark" />
+          <StatusBar style="light" />
         </View>
       </PanGestureHandler>
     </SafeAreaView>

@@ -5,11 +5,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  Platform,
-  Modal,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { gql, useQuery, useMutation } from "@apollo/client";
@@ -81,18 +79,28 @@ const Journal = () => {
   }, [loading]);
 
   const [deleteFoodLog] = useMutation(DELETE_FOOD_LOG, {
-    onCompleted: () => refetch(),
+    onCompleted: () => {
+      refetch({
+        date: selectedDate,
+        user_id: userId,
+      });
+    },
     onError: (err) => {
       console.error("Error deleting food log:", err.message);
       Alert.alert("Error", "Failed to delete food log. Please try again.");
     },
   });
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
+    if (!userId) return;
     setRefreshing(true);
-    await refetch();
+    console.log("Refetching with date:", selectedDate);
+    await refetch({
+      date: selectedDate,
+      user_id: userId,
+    });
     setRefreshing(false);
-  };
+  }, [userId, selectedDate, refetch]);
 
   if (error) {
     return (
@@ -133,9 +141,12 @@ const Journal = () => {
     [data]
   );
 
-  const handleDeleteLog = (id) => {
-    setTimeout(() => deleteFoodLog({ variables: { id } }), 100);
-  };
+  const handleDeleteLog = useCallback(
+    (id) => {
+      setTimeout(() => deleteFoodLog({ variables: { id } }), 100);
+    },
+    [deleteFoodLog]
+  );
 
   const totalCalories = useMemo(() => {
     return dataList.reduce((total, item) => {
@@ -169,6 +180,57 @@ const Journal = () => {
   };
 
   const dateList = generateDatesForMonth(selectedMonth);
+
+  const renderItem = useCallback(
+    ({ item }) => {
+      if (item.type === "header") {
+        return (
+          <View style={styles.headerContainer}>
+            <View style={styles.headerContent}>
+              <Text style={styles.mealTypeText}>{item.mealType}</Text>
+              <Text style={styles.kcalText}>
+                {item.logs.reduce((sum, log) => sum + log.kcal, 0)} kcal
+              </Text>
+            </View>
+
+            {item.logs.length > 0 ? (
+              item.logs.map((log, index) => (
+                <Swipeable
+                  key={log.id}
+                  renderRightActions={() => (
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={() => handleDeleteLog(log.id)}
+                    >
+                      <MaterialIcons name="delete" size={24} color="white" />
+                    </TouchableOpacity>
+                  )}
+                >
+                  <View style={styles.logItem}>
+                    <FoodLogListItem
+                      label={log.label}
+                      serving={parseFloat(log.serving)}
+                      kcal={parseFloat(log.kcal)}
+                    />
+                    {index !== item.logs.length - 1 && (
+                      <View style={styles.separator} />
+                    )}
+                  </View>
+                </Swipeable>
+              ))
+            ) : (
+              <Text style={styles.noEntriesText}>
+                No entries for {item.mealType}.
+              </Text>
+            )}
+          </View>
+        );
+      }
+      return null;
+    },
+    [handleDeleteLog]
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.datePickerContainer}>
@@ -181,8 +243,14 @@ const Journal = () => {
         <HorizontalDatePicker
           dateList={dateList}
           selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-          onDateChange={refetch}
+          setSelectedDate={(date) => {
+            setSelectedDate(date);
+            refetch({
+              date,
+              user_id: userId,
+            });
+            console.log("Refetching with new date:", date);
+          }}
         />
       </View>
 
@@ -200,57 +268,10 @@ const Journal = () => {
               onNavigate={() => navigation.navigate("insight")}
             />
           }
-          renderItem={({ item }) => {
-            if (item.type === "header") {
-              return (
-                <View style={styles.headerContainer}>
-                  <View style={styles.headerContent}>
-                    <Text style={styles.mealTypeText}>{item.mealType}</Text>
-                    <Text style={styles.kcalText}>
-                      {item.logs.reduce((sum, log) => sum + log.kcal, 0)} kcal
-                    </Text>
-                  </View>
-
-                  {item.logs.length > 0 ? (
-                    item.logs.map((log, index) => (
-                      <Swipeable
-                        key={log.id}
-                        renderRightActions={() => (
-                          <TouchableOpacity
-                            style={styles.deleteButton}
-                            onPress={() => handleDeleteLog(log.id)}
-                          >
-                            <MaterialIcons
-                              name="delete"
-                              size={24}
-                              color="white"
-                            />
-                          </TouchableOpacity>
-                        )}
-                      >
-                        <View style={styles.logItem}>
-                          <FoodLogListItem
-                            label={log.label}
-                            serving={parseFloat(log.serving)}
-                            kcal={parseFloat(log.kcal)}
-                          />
-
-                          {index !== item.logs.length - 1 && (
-                            <View style={styles.separator} />
-                          )}
-                        </View>
-                      </Swipeable>
-                    ))
-                  ) : (
-                    <Text style={styles.noEntriesText}>
-                      No entries for {item.mealType}.
-                    </Text>
-                  )}
-                </View>
-              );
-            }
-            return null;
-          }}
+          renderItem={renderItem}
+          keyExtractor={(item) =>
+            item.id ? item.id.toString() : item.mealType
+          }
         />
       </View>
 

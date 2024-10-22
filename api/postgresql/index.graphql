@@ -2,7 +2,7 @@
 #import "resolvers/authHandler.js"
 
 type Food_log {
-  created_at: Date
+  created_at: DateTime!
   food_id: String!
   id: Int!
   kcal: Int
@@ -21,7 +21,7 @@ type Users {
   username: String
   email: String
   password: String
-  token: String
+  ispersonalinfocomplete: Boolean
 }
 
 type Mutation {
@@ -123,6 +123,7 @@ type Mutation {
     user_id: String
     mealtype: String
     serving: Int
+    created_at: DateTime!
   ): Food_log
     @dbquery(
       type: "postgresql"
@@ -132,7 +133,12 @@ type Mutation {
       configuration: "postgresql_config"
     )
 
-  insert_users(username: String!, email: String!, password: String!): Users
+  insert_users(
+    username: String!
+    email: String!
+    password: String!
+    ispersonalinfocomplete: Boolean
+  ): Users
     @dbquery(
       type: "postgresql"
       schema: "public"

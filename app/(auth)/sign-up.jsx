@@ -19,7 +19,7 @@ import CustomButton from "../../components/CustomButton";
 // GraphQL Mutation for signing up a user
 const SIGNUP_MUTATION = gql`
   mutation SignUpUser($username: String!, $email: String!, $password: String!) {
-    insert_users(username: $username, email: $email, password: $password) {
+    insert_users(username: $username, email: $email,  password: $password, ispersonalinfocomplete: false) {
       user_id
       username
       email
@@ -163,6 +163,7 @@ const SignUp = () => {
 
         <FormField
           title="Username"
+          placeholder = "Username"
           value={form.username}
           handleChangeText={(e) => setForm({ ...form, username: e })}
           otherStyles={styles.fieldSpacing}
@@ -170,6 +171,7 @@ const SignUp = () => {
 
         <FormField
           title="Email"
+          placeholder = "Email"
           value={form.email}
           handleChangeText={(e) => setForm({ ...form, email: e })}
           otherStyles={styles.fieldSpacing}
@@ -178,6 +180,7 @@ const SignUp = () => {
 
         <FormField
           title="Password"
+          placeholder = "Password"
           value={form.password}
           handleChangeText={(e) => setForm({ ...form, password: e })}
           otherStyles={styles.fieldSpacing}
@@ -186,6 +189,7 @@ const SignUp = () => {
 
         <FormField
           title="Confirm Password"
+          placeholder = "Confirm Password"
           value={form.confirmPassword}
           handleChangeText={(e) => setForm({ ...form, confirmPassword: e })}
           otherStyles={styles.fieldSpacing}

@@ -14,7 +14,7 @@ export default function App() {
       const userId = await AsyncStorage.getItem("user_id");
       if (userId) {
         // User is already logged in, redirect to home
-        router.replace("/(tabs)/home"); // Update to your home page route
+        router.replace("/(tabs)/home");
       }
     };
 
@@ -24,11 +24,7 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.innerContainer}>
-        <Image
-          source={images.logo}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+        <Image source={images.logo} style={styles.logo} resizeMode="contain" />
         <Image
           source={images.cards}
           style={styles.cards}
@@ -37,8 +33,8 @@ export default function App() {
 
         <View style={styles.welcomeContainer}>
           <Text style={styles.welcomeText}>
-            Welcome to{" "}
-            <Text style={styles.highlightText}>KidneyCare</Text>, your trusted guide to a healthier kidney-friendly diet.
+            Welcome to <Text style={styles.highlightText}>KidneyCare</Text>,
+            your trusted guide to a healthier kidney-friendly diet.
           </Text>
         </View>
 
@@ -60,9 +56,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   innerContainer: {
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
     flexGrow: 1,
     paddingHorizontal: 16,
   },
@@ -72,24 +68,24 @@ const styles = StyleSheet.create({
   },
   cards: {
     maxWidth: 380,
-    width: '100%',
+    width: "100%",
     height: 300,
   },
   welcomeContainer: {
-    position: 'relative',
+    position: "relative",
     marginTop: 20,
   },
   welcomeText: {
     fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    color: '#4B5563', 
+    fontWeight: "bold",
+    textAlign: "center",
+    color: "#4B5563",
   },
   highlightText: {
-    color: '#8B7FF5', 
+    color: "#8B7FF5",
   },
   buttonContainer: {
-    width: '100%',
+    width: "100%",
     marginTop: 28,
   },
 });

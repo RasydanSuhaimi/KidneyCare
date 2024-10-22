@@ -17,6 +17,7 @@ const SIGN_IN = gql`
       user_id
       username
       email
+      ispersonalinfocomplete
     }
   }
 `;
@@ -50,7 +51,16 @@ const SignIn = () => {
       if (data?.signIn) {
         await AsyncStorage.setItem("user_id", data.signIn.user_id);
         setUserId(data.signIn.user_id);
-        router.replace("/(tabs)/home");
+
+        // Check if onboarding is complete
+        if (!data.signIn.ispersonalinfocomplete) {
+          // Redirect to onboarding screen
+          router.replace("/personalInfo");
+        } else {
+          // Redirect to home
+          router.replace("/personalInfo");
+          //router.replace("/(tabs)/home");
+        }
       } else {
         Alert.alert("Invalid email or password", "Please try again.");
       }
@@ -74,6 +84,7 @@ const SignIn = () => {
 
         <FormField
           title="Email"
+          placeholder="Email"
           value={form.email}
           handleChangeText={(e) => setForm({ ...form, email: e })}
           otherStyles={styles.formField}
@@ -84,6 +95,7 @@ const SignIn = () => {
 
         <FormField
           title="Password"
+          placeholder="Password"
           value={form.password}
           handleChangeText={(e) => setForm({ ...form, password: e })}
           otherStyles={styles.formField}
@@ -121,7 +133,7 @@ const SignIn = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#f8f8fa", 
+    backgroundColor: "#f8f8fa",
     flex: 1,
   },
   content: {
@@ -179,7 +191,7 @@ const styles = StyleSheet.create({
   },
   signUpLink: {
     fontSize: 16,
-    color: "#8B7FF5", 
+    color: "#8B7FF5",
     fontWeight: "600",
     marginLeft: 5,
   },
