@@ -21,6 +21,7 @@ import CalorieProgress from "../../components/CalorieProgress";
 import HorizontalDatePicker from "../../components/HorizontalDatePicker";
 import MonthPicker from "../../components/MonthPicker";
 
+// Existing food log query
 const QUERY_FOOD_LOGS = gql`
   query foodLogsForDate($date: Date!, $user_id: String!) {
     foodLogsForDate(date: $date, user_id: $user_id) {
@@ -36,10 +37,20 @@ const QUERY_FOOD_LOGS = gql`
   }
 `;
 
+// Existing delete mutation
 const DELETE_FOOD_LOG = gql`
   mutation deleteFood_log($id: Int!) {
     deleteFood_log(id: $id) {
       id
+    }
+  }
+`;
+
+// New query for recommended calories
+const GET_CALORIES = gql`
+  query getRecommendedCalorie($user_id: Int!) {
+    getRecommendedCalorie(user_id: $user_id) {
+      recommended_calories
     }
   }
 `;
@@ -53,6 +64,7 @@ const Journal = () => {
   );
   const [selectedMonth, setSelectedMonth] = useState(dayjs().format("YYYY-MM"));
   const [refreshing, setRefreshing] = useState(false);
+  const [targetCalories, setTargetCalories] = useState(2000); // Default value
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -65,7 +77,13 @@ const Journal = () => {
     fetchUserId();
   }, []);
 
-  const { data, loading, error, refetch } = useQuery(QUERY_FOOD_LOGS, {
+  // Fetch food logs
+  const {
+    data: foodLogsData,
+    loading: loadingFoodLogs,
+    error: foodLogsError,
+    refetch: refetchFoodLogs,
+  } = useQuery(QUERY_FOOD_LOGS, {
     variables: {
       date: selectedDate,
       user_id: userId,
@@ -73,17 +91,39 @@ const Journal = () => {
     skip: !userId,
   });
 
+  // Fetch recommended calories
+  const {
+    data: calorieData,
+    loading: loadingCalories,
+    error: calorieError,
+    refetch: refetchCalories,
+  } = useQuery(GET_CALORIES, {
+    variables: { user_id: parseInt(userId) }, // Ensure userId is an integer
+    skip: !userId,
+  });
+
   useEffect(() => {
-    if (loading) setLoadingModalVisible(true);
+    if (loadingFoodLogs) setLoadingModalVisible(true);
     else setLoadingModalVisible(false);
-  }, [loading]);
+  }, [loadingFoodLogs]);
+
+  // Update targetCalories based on the fetched data
+  useEffect(() => {
+    if (calorieData && calorieData.getRecommendedCalorie.length > 0) {
+      setTargetCalories(
+        calorieData.getRecommendedCalorie[0].recommended_calories
+      );
+    }
+  }, [calorieData]);
 
   const [deleteFoodLog] = useMutation(DELETE_FOOD_LOG, {
     onCompleted: () => {
-      refetch({
+      refetchFoodLogs({
         date: selectedDate,
         user_id: userId,
       });
+      // Optionally, refetch calories as well after deleting a food log
+      refetchCalories();
     },
     onError: (err) => {
       console.error("Error deleting food log:", err.message);
@@ -95,21 +135,26 @@ const Journal = () => {
     if (!userId) return;
     setRefreshing(true);
     console.log("Refetching with date:", selectedDate);
-    await refetch({
+    await refetchFoodLogs({
       date: selectedDate,
       user_id: userId,
     });
+    await refetchCalories(); // Refetch calories on refresh if needed
     setRefreshing(false);
-  }, [userId, selectedDate, refetch]);
+  }, [userId, selectedDate, refetchFoodLogs, refetchCalories]);
 
-  if (error) {
+  if (foodLogsError) {
     return (
       <SafeAreaView style={styles.errorContainer}>
         <Text style={styles.errorText}>
-          Failed to fetch data. Please try again.
+          Failed to fetch food logs. Please try again.
         </Text>
       </SafeAreaView>
     );
+  }
+
+  if (calorieError) {
+    console.error("Error fetching calories:", calorieError.message);
   }
 
   const mealTypes = ["Breakfast", "Lunch", "Dinner", "Snack"];
@@ -137,8 +182,8 @@ const Journal = () => {
   };
 
   const dataList = useMemo(
-    () => createDataList(data?.foodLogsForDate || []),
-    [data]
+    () => createDataList(foodLogsData?.foodLogsForDate || []),
+    [foodLogsData]
   );
 
   const handleDeleteLog = useCallback(
@@ -156,8 +201,6 @@ const Journal = () => {
       return total;
     }, 0);
   }, [dataList]);
-
-  const targetCalories = 2000;
 
   const generateDatesForMonth = (month) => {
     const startOfMonth = dayjs(month).startOf("month");
@@ -245,7 +288,7 @@ const Journal = () => {
           selectedDate={selectedDate}
           setSelectedDate={(date) => {
             setSelectedDate(date);
-            refetch({
+            refetchFoodLogs({
               date,
               user_id: userId,
             });
@@ -330,7 +373,7 @@ const styles = StyleSheet.create({
     color: "#3AAFA9",
   },
   deleteButton: {
-    backgroundColor: "red",
+    backgroundColor: "#FF6B6B",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 15,
