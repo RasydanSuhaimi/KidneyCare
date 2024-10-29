@@ -14,7 +14,7 @@ const GenderPicker = ({ selectedGender, setSelectedGender }) => {
   const [tempSelectedGender, setTempSelectedGender] = useState(selectedGender);
 
   const openPicker = () => {
-    setTempSelectedGender(selectedGender || "Male"); // Set default gender when opening
+    setTempSelectedGender(selectedGender || "Male"); 
     setModalVisible(true);
   };
 
@@ -23,7 +23,7 @@ const GenderPicker = ({ selectedGender, setSelectedGender }) => {
   };
 
   const handleDone = () => {
-    console.log("Selected Gender:", tempSelectedGender); // Log selected gender
+    console.log("Selected Gender:", tempSelectedGender);
     setSelectedGender(tempSelectedGender);
     closePicker();
   };
@@ -80,6 +80,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
+    marginBottom: 8
   },
   inputText: {
     flex: 1,
@@ -100,7 +101,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   doneButton: {
-    backgroundColor: "#8B7FF5",
+    backgroundColor: "#3AAFA9",
     height: 50,
     borderRadius: 20,
     alignItems: "center",

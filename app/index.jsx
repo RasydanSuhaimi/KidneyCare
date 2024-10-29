@@ -1,20 +1,31 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
-import { Text, View, Image, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, Dimensions } from "react-native";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import LottieView from "lottie-react-native";
 
-import { images } from "../constants";
 import CustomButton from "../components/CustomButton";
+
+const { width } = Dimensions.get("window");
 
 export default function App() {
   useEffect(() => {
     const checkUserSession = async () => {
       const userId = await AsyncStorage.getItem("user_id");
+      const isPersonalInfoComplete = await AsyncStorage.getItem(
+        "ispersonalinfocomplete"
+      );
+
       if (userId) {
-        // User is already logged in, redirect to home
-        router.replace("/(tabs)/home");
+        if (isPersonalInfoComplete === "false") {
+          router.replace("/personalInfo");
+          //router.replace("/(tabs)/home");
+        } else {
+          //router.replace("/onboarding");
+          router.replace("/(tabs)/home");
+        }
       }
     };
 
@@ -24,11 +35,11 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.innerContainer}>
-        <Image source={images.logo} style={styles.logo} resizeMode="contain" />
-        <Image
-          source={images.cards}
+        <LottieView
+          source={require("../assets/animations/kidneyGreen.json")}
           style={styles.cards}
-          resizeMode="contain"
+          autoPlay
+          loop={false}
         />
 
         <View style={styles.welcomeContainer}>
@@ -62,30 +73,23 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: 16,
   },
-  logo: {
-    width: 130,
-    height: 84,
-  },
   cards: {
-    maxWidth: 380,
-    width: "100%",
-    height: 300,
+    width: width * 0.9,
+    height: width * 0.9,
+    justifyContent: "center",
+    alignItems: "center",
   },
   welcomeContainer: {
     position: "relative",
-    marginTop: 20,
+    marginBottom: 40,
   },
   welcomeText: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "bold",
     textAlign: "center",
     color: "#4B5563",
   },
   highlightText: {
-    color: "#8B7FF5",
-  },
-  buttonContainer: {
-    width: "100%",
-    marginTop: 28,
+    color: "#3AAFA9",
   },
 });

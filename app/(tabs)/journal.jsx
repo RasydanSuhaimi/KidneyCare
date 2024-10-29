@@ -284,11 +284,11 @@ const Journal = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#8B7FF5",
+    backgroundColor: "#3AAFA9",
   },
   datePickerContainer: {
     paddingHorizontal: 16,
-    backgroundColor: "#8B7FF5",
+    backgroundColor: "#3AAFA9",
   },
   progressContainer: {
     flex: 1,
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "right",
     paddingHorizontal: 12,
-    color: "#8B7FF5",
+    color: "#3AAFA9",
   },
   deleteButton: {
     backgroundColor: "red",

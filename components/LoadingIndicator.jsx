@@ -1,12 +1,17 @@
 import React from "react";
-import { Modal, View, ActivityIndicator, Text, StyleSheet } from "react-native";
+import { Modal, View, StyleSheet } from "react-native";
+import LottieView from "lottie-react-native";
 
-const LoadingIndicator = ({ visible }) => (
+const LoadingIndicator = ({ visible = false }) => (
   <Modal transparent={true} visible={visible} animationType="fade">
     <View style={styles.modalBackground}>
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#fff" />
-        <Text style={styles.loadingText}>Loading</Text>
+        <LottieView
+          source={require("../assets/animations/kidneyGreen.json")}
+          autoPlay
+          loop
+          style={styles.lottie}
+        />
       </View>
     </View>
   </Modal>
@@ -17,6 +22,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)", 
   },
   loadingContainer: {
     width: 100,
@@ -26,9 +32,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#333",
   },
-  loadingText: {
-    color: "#fff",
-    marginTop: 10,
+  lottie: {
+    width: 80, 
+    height: 80,
   },
 });
 

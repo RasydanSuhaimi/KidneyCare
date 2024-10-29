@@ -1,223 +1,157 @@
-import { SafeAreaView, StyleSheet, Text, View } from "react-native";
-import React, { useState, useRef } from "react";
+import { StyleSheet, Text, View, Dimensions } from "react-native";
+import React from "react";
+import Onboarding from "react-native-onboarding-swiper";
+import LottieView from "lottie-react-native";
 import { router } from "expo-router";
-import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { StatusBar } from "expo-status-bar";
-import Animated, {
-  FadeIn,
-  FadeOut,
-  SlideInRight,
-} from "react-native-reanimated";
-import { PanGestureHandler } from "react-native-gesture-handler";
-import { useFocusEffect } from "@react-navigation/native"; 
+import { TouchableOpacity } from "react-native";
+import Animated, { SlideInRight } from "react-native-reanimated";
 
+const { width } = Dimensions.get("window");
 
-const onboardingSteps = [
-  {
-    icon: "list-check",
-    title: "Track Your Kidney Health",
-    description:
-      "Get personalized dietary advice to manage your CKD. Stay on top of your health with our tailored meal recommendations and progress tracking.",
-  },
-  {
-    icon: "list-check",
-    title: "Monitor Your Nutrient Intake",
-    description:
-      "Keep track of essential nutrients like sodium, potassium, and protein. We'll help you stay within safe limits to protect your kidneys.",
-  },
-  {
-    icon: "list-check",
-    title: "Your Health, Your Way",
-    description:
-      "Set your goals and monitor your progress. With our app, managing your diet for CKD becomes simpler and more effective.",
-  },
-];
-
-const Onboarding = () => {
-  const [screenIndex, setScreenIndex] = useState(0);
-  const data = onboardingSteps[screenIndex];
-  const swipeActive = useRef(false);
-  const isNavigatingToSignIn = useRef(false);
-
-  // Function to reset onboarding to the first screen
-  const resetOnboarding = () => {
-    setScreenIndex(0);
-    isNavigatingToSignIn.current = false;
+const OnboardingScreen = () => {
+  const handleDone = () => {
+    router.push("/sign-in");
   };
 
-  /**const onContinue = () => {
-    const isLastScreen = screenIndex === onboardingSteps.length - 1;
-    if (!isLastScreen) {
-      setScreenIndex(screenIndex + 1);
-    } else {
-      endOnboarding();
-    }
-  };**/
-
-  const endOnboarding = () => {
-    if (!isNavigatingToSignIn.current) {
-      isNavigatingToSignIn.current = true;
-      router.push("/sign-in");
-    }
+  const doneButton = ({ ...props }) => {
+    return (
+      <TouchableOpacity onPress={handleDone}>
+        <Animated.View
+          style={styles.doneButton}
+          entering={SlideInRight}
+          {...props}
+        >
+          <Text style={styles.doneText}>Sign In</Text>
+        </Animated.View>
+      </TouchableOpacity>
+    );
   };
 
-  const onSwipeLeft = () => {
-    if (!swipeActive.current) {
-      if (screenIndex < onboardingSteps.length - 1) {
-        swipeActive.current = true;
-        setScreenIndex(screenIndex + 1);
-      } else {
-        endOnboarding();
-      }
-    }
+  const nextButton = ({ ...props }) => {
+    return (
+      <TouchableOpacity style={styles.nextButton} {...props}>
+        <Text style={styles.doneText}>Next</Text>
+      </TouchableOpacity>
+    );
   };
 
-  const onSwipeRight = () => {
-    if (!swipeActive.current) {
-      if (screenIndex > 0) {
-        swipeActive.current = true;
-        setScreenIndex(screenIndex - 1);
-      }
-    }
+  const skipButton = ({ ...props }) => {
+    return (
+      <TouchableOpacity style={styles.skipButton} {...props}>
+        <Text style={styles.skipText}>Skip</Text>
+      </TouchableOpacity>
+    );
   };
-
-  const onGestureEnd = () => {
-    swipeActive.current = false;
-  };
-
-  useFocusEffect(
-    React.useCallback(() => {
-      resetOnboarding();
-    }, [])
-  );
 
   return (
-    <SafeAreaView style={styles.page}>
-      <PanGestureHandler
-        onGestureEvent={(event) => {
-          const translationX = event.nativeEvent.translationX;
-
-          if (translationX < -50) {
-            onSwipeLeft();
-          } else if (translationX > 50) {
-            onSwipeRight();
-          }
-        }}
-        onEnded={onGestureEnd}
-      >
-        <View style={styles.pageContent}>
-          <View style={styles.skipRow}>
-            <Text onPress={endOnboarding} style={styles.skipText}>
-              Skip
-            </Text>
-          </View>
-
-          <View key={screenIndex} style={{ flex: 1 }}>
-            <Animated.View entering={FadeIn} exiting={FadeOut}>
-              <FontAwesome6
-                style={styles.icon}
-                name={data.icon}
-                size={100}
-                color="#8B7FF5"
-              />
-            </Animated.View>
-            <View style={styles.footer}>
-              <Animated.Text entering={SlideInRight} style={styles.title}>
-                {data.title}
-              </Animated.Text>
-              <Animated.Text entering={SlideInRight} style={styles.description}>
-                {data.description}
-              </Animated.Text>
-
-              <View style={styles.stepIndicatorContainer}>
-                {onboardingSteps.map((step, index) => (
-                  <View
-                    key={index}
-                    style={[
-                      {
-                        backgroundColor:
-                          index === screenIndex ? "#8B7FF5" : "grey",
-                        height: index === screenIndex ? 10 : 6,
-                        width: index === screenIndex ? 30 : 20,
-                        borderRadius: 10,
-                      },
-                    ]}
-                  />
-                ))}
+    <View style={styles.container}>
+      <Onboarding
+        onDone={handleDone}
+        onSkip={handleDone}
+        NextButtonComponent={nextButton}
+        SkipButtonComponent={skipButton}
+        DoneButtonComponent={doneButton}
+        bottomBarHighlight={false}
+        containerStyles={{ paddingHorizontal: 15 }}
+        pages={[
+          {
+            backgroundColor: "#f8f8fa",
+            image: (
+              <View>
+                <LottieView
+                  source={require("../assets/animations/animation2.json")}
+                  autoPlay
+                  loop
+                  style={styles.lottie}
+                />
               </View>
-            </View>
-          </View>
-
-          <StatusBar style="light" />
-        </View>
-      </PanGestureHandler>
-    </SafeAreaView>
+            ),
+            title: "Empower Your Kidney Journey",
+            subtitle:
+              "Discover tailored dietary solutions to support your kidney health. Take control with personalized meal plans.",
+          },
+          {
+            backgroundColor: "#f8f8fa",
+            image: (
+              <View>
+                <LottieView
+                  source={require("../assets/animations/trackfood.json")}
+                  autoPlay
+                  loop
+                  style={styles.lottie}
+                />
+              </View>
+            ),
+            title: "Track Your Nutrients Easily",
+            subtitle:
+              "Effortlessly monitor sodium, potassium, and protein intake. Stay informed and protect your kidney function.",
+          },
+          {
+            backgroundColor: "#f8f8fa",
+            image: (
+              <View>
+                <LottieView
+                  source={require("../assets/animations/checklist.json")}
+                  autoPlay
+                  loop
+                  style={styles.lottie}
+                />
+              </View>
+            ),
+            title: "Achieve Your Health Goals",
+            subtitle:
+              "Set your dietary objectives and watch your progress. Simplify your CKD management with our intuitive app.",
+          },
+        ]}
+      />
+    </View>
   );
 };
 
-export default Onboarding;
+export default OnboardingScreen;
 
 const styles = StyleSheet.create({
-  page: {
-    justifyContent: "center",
+  container: {
     flex: 1,
-    backgroundColor: "#f8f8fa",
+    backgroundColor: "white",
   },
-
-  pageContent: {
+  lottie: {
+    width: width * 0.9,
+    height: width * 0.9,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  doneButton: {
     padding: 20,
-    flex: 1,
-    paddingTop: 0,
+    width: 100,
+    backgroundColor: "#3AAFA9",
+    borderTopLeftRadius: 100,
+    borderBottomLeftRadius: 100,
   },
-
-  title: {
-    color: "black",
-    fontSize: 45,
+  doneText: {
     fontWeight: "600",
-    marginVertical: 40,
-    textAlign: "center",
-  },
-
-  description: {
-    color: "gray",
     fontSize: 16,
-    lineHeight: 28,
-    marginVertical: 20,
+    color: "white",
     textAlign: "center",
   },
-
-  icon: {
-    alignSelf: "center",
-    margin: 20,
-    marginTop: 50,
+  nextButton: {
+    padding: 20,
+    marginRight: 15,
+    width: 100,
+    backgroundColor: "#3AAFA9",
+    borderRadius: "100%",
   },
-
-  button: {
-    marginTop: 20,
-    alignItems: "center",
+  skipButton: {
+    padding: 20,
+    marginLeft: 15,
+    width: 100,
+    backgroundColor: "#FF6B6B",
+    borderRadius: "100%",
   },
-
-  skipRow: {
-    alignItems: "flex-end",
-  },
-
-  footer: {
-    marginTop: "auto",
-  },
-
   skipText: {
-    padding: 15,
-    fontWeight: "bold",
+    fontWeight: "600",
     fontSize: 16,
-    paddingHorizontal: 15,
-  },
-
-  stepIndicatorContainer: {
-    flexDirection: "row",
-    gap: 8,
-    marginHorizontal: 160,
-    margin: 30,
-    justifyContent: "center",
-    alignItems: "center",
+    color: "white",
+    textAlign: "center",
   },
 });

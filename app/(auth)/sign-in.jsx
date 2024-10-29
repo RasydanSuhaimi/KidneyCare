@@ -9,6 +9,7 @@ import FormField from "../../components/FormField";
 import CustomButton from "../../components/CustomButton";
 import { gql, useLazyQuery } from "@apollo/client";
 import { useUser } from "../../context/UserContext";
+import LoadingIndicator from "../../components/LoadingIndicator";
 import { StyleSheet } from "react-native";
 
 const SIGN_IN = gql`
@@ -33,9 +34,13 @@ const SignIn = () => {
 
   useEffect(() => {
     const checkUserSession = async () => {
-      const userId = await AsyncStorage.getItem("user_id");
-      if (userId) {
-        router.replace("/(tabs)/home");
+      try {
+        const userId = await AsyncStorage.getItem("user_id");
+        if (userId) {
+          router.replace("/(tabs)/home");
+        }
+      } catch (error) {
+        console.error("Error checking user session:", error);
       }
     };
     checkUserSession();
@@ -49,20 +54,27 @@ const SignIn = () => {
       });
 
       if (data?.signIn) {
-        await AsyncStorage.setItem("user_id", data.signIn.user_id);
+        await AsyncStorage.setItem("user_id", String(data.signIn.user_id));
+        await AsyncStorage.setItem(
+          "ispersonalinfocomplete",
+          data.signIn.ispersonalinfocomplete.toString()
+        );
+
         setUserId(data.signIn.user_id);
 
-        // Check if onboarding is complete
-        if (!data.signIn.ispersonalinfocomplete) {
-          // Redirect to onboarding screen
-          router.replace("/personalInfo");
-        } else {
-          // Redirect to home
-          router.replace("/personalInfo");
-          //router.replace("/(tabs)/home");
-        }
+        setIsSubmitting(false);
+
+        setTimeout(() => {
+          if (!data.signIn.ispersonalinfocomplete) {
+            router.replace("/personalInfo");
+            //router.replace("/(tabs)/home");
+          } else {
+            router.replace("/(tabs)/home");
+          }
+        }, 100);
       } else {
         Alert.alert("Invalid email or password", "Please try again.");
+        setIsSubmitting(false);
       }
     } catch (error) {
       console.error("Sign-in failed:", error);
@@ -70,11 +82,9 @@ const SignIn = () => {
         "Error",
         "An error occurred while signing in. Please check your credentials and try again."
       );
-    } finally {
       setIsSubmitting(false);
     }
   };
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -109,15 +119,6 @@ const SignIn = () => {
           isLoading={isSubmitting}
         />
 
-        {isSubmitting && (
-          <View style={styles.loadingContainer}>
-            <View style={styles.loadingIndicator}>
-              <ActivityIndicator size="large" color="#fff" />
-              <Text style={styles.loadingText}>Loading</Text>
-            </View>
-          </View>
-        )}
-
         <View style={styles.footer}>
           <Text style={styles.footerText}>Don't have an account?</Text>
           <Link href="/sign-up" style={styles.signUpLink}>
@@ -125,6 +126,8 @@ const SignIn = () => {
           </Link>
         </View>
       </View>
+
+      <LoadingIndicator visible={isSubmitting} />
 
       <StatusBar backgroundColor="#161622" style="dark" />
     </SafeAreaView>
@@ -158,28 +161,6 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 20,
   },
-  loadingContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 10,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  loadingIndicator: {
-    width: 100,
-    height: 100,
-    borderRadius: 20,
-    backgroundColor: "#333",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    color: "#fff",
-    marginTop: 10,
-  },
   footer: {
     justifyContent: "center",
     paddingTop: 20,
@@ -191,7 +172,7 @@ const styles = StyleSheet.create({
   },
   signUpLink: {
     fontSize: 16,
-    color: "#8B7FF5",
+    color: "#3AAFA9",
     fontWeight: "600",
     marginLeft: 5,
   },

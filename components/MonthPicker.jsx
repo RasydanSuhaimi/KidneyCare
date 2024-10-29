@@ -53,7 +53,7 @@ const MonthPicker = ({ selectedMonth, setSelectedMonth, setSelectedDate }) => {
         <Text style={styles.selectMonthText}>
           {dayjs(selectedMonth).format("MMMM YYYY")}
         </Text>
-        <AntDesign name="caretdown" size={15} color="white" />
+        <AntDesign name="caretdown" size={16} color="white" />
       </TouchableOpacity>
 
       {Platform.OS === "ios" && showMonthPicker && (
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   selectMonthButton: {
-    backgroundColor: "#8B7FF5",
+    backgroundColor: "#3AAFA9",
     borderRadius: 10,
     marginBottom: 10,
     width: 150,
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
   },
   selectMonthText: {
     color: "white",
-    fontSize: 15,
+    fontSize: 16,
     marginRight: 5,
   },
 
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
   },
   doneButton: {
-    backgroundColor: "#8B7FF5",
+    backgroundColor: "#3AAFA9",
     height: 50,
     borderRadius: 20,
     alignItems: "center",

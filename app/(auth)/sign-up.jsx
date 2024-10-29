@@ -5,7 +5,7 @@ import {
   Image,
   Alert,
   ActivityIndicator,
-  StyleSheet
+  StyleSheet,
 } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,11 +15,17 @@ import { gql, useMutation, useLazyQuery } from "@apollo/client";
 import { images } from "../../constants";
 import FormField from "../../components/FormField";
 import CustomButton from "../../components/CustomButton";
+import LoadingIndicator from "../../components/LoadingIndicator";
 
 // GraphQL Mutation for signing up a user
 const SIGNUP_MUTATION = gql`
   mutation SignUpUser($username: String!, $email: String!, $password: String!) {
-    insert_users(username: $username, email: $email,  password: $password, ispersonalinfocomplete: false) {
+    insert_users(
+      username: $username
+      email: $email
+      password: $password
+      ispersonalinfocomplete: false
+    ) {
       user_id
       username
       email
@@ -151,19 +157,13 @@ const SignUp = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <Image
-          source={images.logo}
-          resizeMode="contain"
-          style={styles.logo}
-        />
+        <Image source={images.logo} resizeMode="contain" style={styles.logo} />
 
-        <Text style={styles.title}>
-          Sign up to KidneyCare
-        </Text>
+        <Text style={styles.title}>Sign up to KidneyCare</Text>
 
         <FormField
           title="Username"
-          placeholder = "Username"
+          placeholder="Username"
           value={form.username}
           handleChangeText={(e) => setForm({ ...form, username: e })}
           otherStyles={styles.fieldSpacing}
@@ -171,7 +171,7 @@ const SignUp = () => {
 
         <FormField
           title="Email"
-          placeholder = "Email"
+          placeholder="Email"
           value={form.email}
           handleChangeText={(e) => setForm({ ...form, email: e })}
           otherStyles={styles.fieldSpacing}
@@ -180,7 +180,7 @@ const SignUp = () => {
 
         <FormField
           title="Password"
-          placeholder = "Password"
+          placeholder="Password"
           value={form.password}
           handleChangeText={(e) => setForm({ ...form, password: e })}
           otherStyles={styles.fieldSpacing}
@@ -189,7 +189,7 @@ const SignUp = () => {
 
         <FormField
           title="Confirm Password"
-          placeholder = "Confirm Password"
+          placeholder="Confirm Password"
           value={form.confirmPassword}
           handleChangeText={(e) => setForm({ ...form, confirmPassword: e })}
           otherStyles={styles.fieldSpacing}
@@ -203,23 +203,11 @@ const SignUp = () => {
           isLoading={isSubmitting}
         />
 
-        {(isSubmitting || isChecking) && (
-          <View style={styles.loadingOverlay}>
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#fff" />
-              <Text style={styles.loadingText}>Loading</Text>
-            </View>
-          </View>
-        )}
+        {(isSubmitting || isChecking) && <LoadingIndicator visible={true} />}
 
         <View style={styles.signInContainer}>
-          <Text style={styles.signInText}>
-            Have an account?
-          </Text>
-          <Link
-            href="/sign-in"
-            style={styles.signInLink}
-          >
+          <Text style={styles.signInText}>Have an account?</Text>
+          <Link href="/sign-in" style={styles.signInLink}>
             Sign In
           </Link>
         </View>
@@ -232,68 +220,46 @@ const SignUp = () => {
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: '#f8f8fa', 
+    backgroundColor: "#f8f8fa",
     flex: 1,
   },
   container: {
-    justifyContent: 'center',
-    minHeight: '85%',
-    padding: 24, 
+    justifyContent: "center",
+    minHeight: "85%",
+    padding: 24,
   },
   logo: {
-    width: 115, 
-    height: 35, 
+    width: 115,
+    height: 35,
   },
   title: {
-    fontSize: 24, 
-    color: 'black',
-    fontWeight: '600', 
-    marginTop: 20, 
+    fontSize: 24,
+    color: "black",
+    fontWeight: "600",
+    marginTop: 20,
     marginBottom: 15,
   },
   fieldSpacing: {
     marginTop: 20,
   },
   buttonSpacing: {
-    marginTop: 20, 
-  },
-  loadingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 20,
-    backgroundColor: "#333",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    color: "#fff",
-    marginTop: 10,
+    marginTop: 20,
   },
   signInContainer: {
-    justifyContent: 'center',
-    paddingTop: 20, 
-    flexDirection: 'row',
+    justifyContent: "center",
+    paddingTop: 20,
+    flexDirection: "row",
     gap: 8,
   },
   signInText: {
     fontSize: 16,
-    color: 'black',
-    fontWeight: '400', 
+    color: "black",
+    fontWeight: "400",
   },
   signInLink: {
-    fontSize: 16, 
-    color: '#8B7FF5',
-    fontWeight: '600', 
+    fontSize: 16,
+    color: "#3AAFA9",
+    fontWeight: "600",
   },
 });
 

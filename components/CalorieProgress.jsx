@@ -53,7 +53,7 @@ const CalorieProgress = ({ totalCalories, targetCalories, onNavigate }) => {
             />
             {/* Animated Progress Circle */}
             <AnimatedCircle
-              stroke={progress >= 1 ? "red" : "#8B7FF5"}
+              stroke={progress >= 1 ? "red" : "#3AAFA9"}
               fill="none"
               cx={size / 2}
               cy={size / 2}
@@ -82,7 +82,7 @@ const CalorieProgress = ({ totalCalories, targetCalories, onNavigate }) => {
 
         {/* Navigation Button */}
         <TouchableOpacity onPress={onNavigate} style={styles.navigateButton}>
-          <Entypo name="bar-graph" size={20} color="#8B7FF5" />
+          <Entypo name="bar-graph" size={20} color="#3AAFA9" />
         </TouchableOpacity>
       </View>
     </View>
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     width: 45,
     height: 45,
     borderRadius: 30,
-    backgroundColor: "#E5DFFF",
+    backgroundColor: "#DEF2F1",
     justifyContent: "center",
     alignItems: "center",
   },

@@ -50,7 +50,7 @@ const HorizontalDatePicker = ({ dateList, selectedDate, setSelectedDate }) => {
               styles.dateItem,
               {
                 backgroundColor:
-                  selectedDate === item.fullDate ? "#7266DC" : "#8B7FF5",
+                  selectedDate === item.fullDate ? "#106D66" : "#3AAFA9",
                 width: itemWidth,
                 height: itemHeight,
               },
@@ -59,12 +59,19 @@ const HorizontalDatePicker = ({ dateList, selectedDate, setSelectedDate }) => {
             <Text
               style={[
                 styles.dateText,
-                { fontSize: selectedDate === item.fullDate ? 20 : 14 },
+                { fontSize: selectedDate === item.fullDate ? 19 : 15 },
               ]}
             >
               {item.displayDate}
             </Text>
-            <Text style={styles.dayText}>{item.day}</Text>
+            <Text
+              style={[
+                styles.dayText,
+                { fontSize: selectedDate === item.fullDate ? 19 : 15 },
+              ]}
+            >
+              {item.day}
+            </Text>
           </TouchableOpacity>
         )}
         showsHorizontalScrollIndicator={false}
@@ -81,7 +88,7 @@ const HorizontalDatePicker = ({ dateList, selectedDate, setSelectedDate }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 2,
-    backgroundColor: "#8B7FF5",
+    backgroundColor: "#3AAFA9",
     borderRadius: 25,
     marginBottom: 15,
     alignItems: "center",

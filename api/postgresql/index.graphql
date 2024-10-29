@@ -11,16 +11,50 @@ type Food_log {
   fat: Float
   fiber: Float
   label: String
-  user_id: String!
+  user_id: Int!
   mealtype: String
   serving: Int
 }
 
 type Users {
-  user_id: String!
+  user_id: Int!
   username: String
   email: String
   password: String
+  ispersonalinfocomplete: Boolean
+}
+
+type Personal_info {
+  id: Int
+  user_id: Int!
+  date_of_birth: Date!
+  age: Int!
+  gender: String!
+  weight: Float!
+  height: Float!
+  current_gfr: Float!
+  stage_gfr: String!
+  gfr_month: Date!
+  dialysis: Boolean!
+  created_at: DateTime
+  updated_at: DateTime
+}
+
+type Nutrition {
+  id: Int
+  personal_info_id: Int!
+  recommended_calories: Float!
+  recommended_protein: Float!
+  recommended_potassium: Int!
+  recommended_phosphorus: Int!
+  recommended_sodium: Int!
+  recommended_water: Int!
+  created_at: DateTime
+  updated_at: DateTime
+}
+
+type UserResponse {
+  user_id: Int
   ispersonalinfocomplete: Boolean
 }
 
@@ -96,6 +130,8 @@ type Query {
       table: "users"
       configuration: "postgresql_config"
     )
+
+  getUserById(user_id: Int!): Users
 }
 
 """
@@ -144,6 +180,60 @@ type Mutation {
       schema: "public"
       table: "users"
       dml: INSERT
+      configuration: "postgresql_config"
+    )
+
+  insertPersonal_info(
+    user_id: Int!
+    date_of_birth: Date!
+    age: Int!
+    gender: String!
+    weight: Float!
+    height: Float!
+    current_gfr: Float!
+    stage_gfr: String!
+    gfr_month: Date!
+    dialysis: Boolean!
+    created_at: DateTime
+    updated_at: DateTime
+  ): Personal_info
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "personal_info"
+      dml: INSERT
+      configuration: "postgresql_config"
+    )
+
+  insertNutrition(
+    personal_info_id: Int!
+    recommended_calories: Float!
+    recommended_protein: Float!
+    recommended_potassium: Int!
+    recommended_phosphorus: Int!
+    recommended_sodium: Int!
+    recommended_water: Int!
+    created_at: DateTime
+    updated_at: DateTime
+  ): Nutrition
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "nutrition"
+      dml: INSERT
+      configuration: "postgresql_config"
+    )
+
+  updatePersonalInfoComplete(user_id: Int!): Users
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      query: """
+      UPDATE users
+      SET ispersonalinfocomplete = true
+      WHERE user_id = $1
+      RETURNING user_id, ispersonalinfocomplete;
+      """
       configuration: "postgresql_config"
     )
 }

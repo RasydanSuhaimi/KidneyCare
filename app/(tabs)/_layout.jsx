@@ -64,7 +64,7 @@ const TabsLayout = () => {
       iconName: "pluscircle",
       title: "",
       isLifted: true,
-      color: "#8B7FF5",
+      color: "#3AAFA9",
     },
     {
       name: "recommendedFood",
@@ -84,7 +84,7 @@ const TabsLayout = () => {
     <Tabs
       screenOptions={{
         tabBarShowLabel: false,
-        tabBarActiveTintColor: "#8B7FF5",
+        tabBarActiveTintColor: "#3AAFA9",
         tabBarInactiveTintColor: "#989B9A",
         tabBarStyle: styles.tabBar,
       }}

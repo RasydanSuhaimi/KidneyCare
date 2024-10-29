@@ -4,7 +4,6 @@ import {
   SafeAreaView,
   View,
   Text,
-  ActivityIndicator,
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
@@ -13,6 +12,7 @@ import { useRouter } from "expo-router";
 import FoodListItem from "../../components/FoodListItem";
 import SearchInput from "../../components/SearchInput";
 import { gql, useLazyQuery } from "@apollo/client";
+import LoadingIndicator from "../../components/LoadingIndicator"; // Import your LoadingIndicator component
 
 const query = gql`
   query search($ingr: String) {
@@ -38,7 +38,6 @@ const query = gql`
 const SearchScreen = () => {
   const [search, setSearch] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(search);
-
   const [runSearch, { data, loading, error }] = useLazyQuery(query, {
     variables: { ingr: "" },
   });
@@ -87,7 +86,7 @@ const SearchScreen = () => {
           placeholder="Search for a food..."
         />
 
-        {loading && <ActivityIndicator />}
+        <LoadingIndicator visible={loading} />
 
         {error && (
           <Text style={styles.errorText}>
@@ -130,15 +129,14 @@ const styles = StyleSheet.create({
   },
   errorText: {
     textAlign: "center",
-    color: "#FF0000", 
+    color: "#FF0000",
   },
   emptyState: {
     flex: 1,
     alignItems: "center",
-    justifyContent: "center",
   },
   flatListContent: {
-    padding: 8, 
+    padding: 8,
     paddingBottom: 75,
     gap: 13,
   },

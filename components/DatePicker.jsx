@@ -11,16 +11,15 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import dayjs from "dayjs";
 
-const DatePicker = ({ selectedDate, setSelectedDate, showMonthYearOnly, placeholder  }) => {
+const DatePicker = ({ selectedDate, setSelectedDate, showMonthYearOnly, placeholder }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [tempSelectedDate, setTempSelectedDate] = useState(new Date());
 
   const onDateChangeAndroid = (event, date) => {
     setShowDatePicker(false);
     if (date) {
-      setSelectedDate(
-        dayjs(date).format(showMonthYearOnly ? "YYYY-MM" : "YYYY-MM-DD")
-      );
+      // Store the date in YYYY-MM-DD format
+      setSelectedDate(dayjs(date).format("YYYY-MM-DD"));
     }
   };
 
@@ -32,11 +31,8 @@ const DatePicker = ({ selectedDate, setSelectedDate, showMonthYearOnly, placehol
 
   const handleConfirmDateIOS = () => {
     setShowDatePicker(false);
-    setSelectedDate(
-      dayjs(tempSelectedDate).format(
-        showMonthYearOnly ? "YYYY-MM" : "YYYY-MM-DD"
-      )
-    );
+    // Store the date in YYYY-MM-DD format
+    setSelectedDate(dayjs(tempSelectedDate).format("YYYY-MM-DD"));
   };
 
   const showDatePickerModal = () => {
@@ -50,15 +46,10 @@ const DatePicker = ({ selectedDate, setSelectedDate, showMonthYearOnly, placehol
         style={styles.selectDateButton}
       >
         <Text
-          style={[
-            styles.selectDateText,
-            { color: selectedDate ? "black" : "#7b7b8b" },
-          ]}
+          style={[styles.selectDateText, { color: selectedDate ? "black" : "#7b7b8b" }]}
         >
           {selectedDate
-            ? dayjs(selectedDate).format(
-                showMonthYearOnly ? "MMMM YYYY" : "DD MMMM YYYY"
-              )
+            ? dayjs(selectedDate).format(showMonthYearOnly ? "MMMM YYYY" : "DD MMMM YYYY")
             : placeholder}
         </Text>
         <AntDesign name="caretdown" size={15} color="white" />
@@ -138,7 +129,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
   },
   doneButton: {
-    backgroundColor: "#8B7FF5",
+    backgroundColor: "#3AAFA9",
     height: 50,
     borderRadius: 20,
     alignItems: "center",
