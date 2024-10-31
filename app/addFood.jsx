@@ -13,8 +13,8 @@ import { useRoute } from "@react-navigation/native";
 import { gql, useMutation } from "@apollo/client";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import MealPicker from "../components/MealPicker";
-import Box from "../components/Box";
+import MealPicker from "../components/addFood/MealPicker";
+import Box from "../components/addFood/Box";
 import moment from "moment-timezone";
 
 const INSERT_FOOD_LOG_MUTATION = gql`

@@ -131,12 +131,20 @@ type Query {
       configuration: "postgresql_config"
     )
 
-  getRecommendedCalorie(user_id: Int!): [Nutrition]
+  GetUserProfile(user_id: Int!): Users
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "users"
+      configuration: "postgresql_config"
+    )
+
+  getRecommendedNutrition(user_id: Int!): [Nutrition]
     @dbquery(
       type: "postgresql"
       schema: "public"
       query: """
-      SELECT n.recommended_calories, n.personal_info_id
+      SELECT n.recommended_calories, n.recommended_protein, n.personal_info_id
       FROM nutrition n
       JOIN personal_info p ON n.personal_info_id = p.id
       WHERE p.user_id = $1

@@ -16,10 +16,10 @@ import { Swipeable } from "react-native-gesture-handler";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useNavigation } from "@react-navigation/native";
 import LoadingIndicator from "../../components/LoadingIndicator";
-import FoodLogListItem from "../../components/FoodLogListItem";
-import CalorieProgress from "../../components/CalorieProgress";
-import HorizontalDatePicker from "../../components/HorizontalDatePicker";
-import MonthPicker from "../../components/MonthPicker";
+import FoodLogListItem from "../../components/Journal/FoodLogListItem";
+import CalorieProgress from "../../components/Journal/CalorieProgress";
+import HorizontalDatePicker from "../../components/Journal/HorizontalDatePicker";
+import MonthPicker from "../../components/Journal/MonthPicker";
 
 // Existing food log query
 const QUERY_FOOD_LOGS = gql`
@@ -33,6 +33,7 @@ const QUERY_FOOD_LOGS = gql`
       kcal
       mealtype
       serving
+      protein
     }
   }
 `;
@@ -47,10 +48,11 @@ const DELETE_FOOD_LOG = gql`
 `;
 
 // New query for recommended calories
-const GET_CALORIES = gql`
-  query getRecommendedCalorie($user_id: Int!) {
-    getRecommendedCalorie(user_id: $user_id) {
+const GET_NUTRITION = gql`
+  query getRecommendedNutrition($user_id: Int!) {
+    getRecommendedNutrition(user_id: $user_id) {
       recommended_calories
+      recommended_protein
     }
   }
 `;
@@ -62,9 +64,11 @@ const Journal = () => {
   const [selectedDate, setSelectedDate] = useState(
     dayjs().format("YYYY-MM-DD")
   );
+  const mealTypes = ["Breakfast", "Lunch", "Dinner", "Snack"];
   const [selectedMonth, setSelectedMonth] = useState(dayjs().format("YYYY-MM"));
   const [refreshing, setRefreshing] = useState(false);
-  const [targetCalories, setTargetCalories] = useState(2000); // Default value
+  const [targetCalories, setTargetCalories] = useState(2000);
+  const [targetprotein, setTargetprotein] = useState(50);
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -93,12 +97,11 @@ const Journal = () => {
 
   // Fetch recommended calories
   const {
-    data: calorieData,
-    loading: loadingCalories,
-    error: calorieError,
+    data: nutritionData,
+    error: nutritionError,
     refetch: refetchCalories,
-  } = useQuery(GET_CALORIES, {
-    variables: { user_id: parseInt(userId) }, // Ensure userId is an integer
+  } = useQuery(GET_NUTRITION, {
+    variables: { user_id: parseInt(userId) },
     skip: !userId,
   });
 
@@ -107,14 +110,17 @@ const Journal = () => {
     else setLoadingModalVisible(false);
   }, [loadingFoodLogs]);
 
-  // Update targetCalories based on the fetched data
+  // Get
   useEffect(() => {
-    if (calorieData && calorieData.getRecommendedCalorie.length > 0) {
+    if (nutritionData && nutritionData.getRecommendedNutrition.length > 0) {
       setTargetCalories(
-        calorieData.getRecommendedCalorie[0].recommended_calories
+        nutritionData.getRecommendedNutrition[0].recommended_calories
+      );
+      setTargetprotein(
+        nutritionData.getRecommendedNutrition[0].recommended_protein
       );
     }
-  }, [calorieData]);
+  }, [nutritionData]);
 
   const [deleteFoodLog] = useMutation(DELETE_FOOD_LOG, {
     onCompleted: () => {
@@ -139,7 +145,7 @@ const Journal = () => {
       date: selectedDate,
       user_id: userId,
     });
-    await refetchCalories(); // Refetch calories on refresh if needed
+    await refetchCalories();
     setRefreshing(false);
   }, [userId, selectedDate, refetchFoodLogs, refetchCalories]);
 
@@ -153,11 +159,9 @@ const Journal = () => {
     );
   }
 
-  if (calorieError) {
-    console.error("Error fetching calories:", calorieError.message);
+  if (nutritionError) {
+    console.error("Error fetching calories:", nutritionError.message);
   }
-
-  const mealTypes = ["Breakfast", "Lunch", "Dinner", "Snack"];
 
   const createDataList = (foodLogs = []) => {
     const dataList = [];
@@ -201,6 +205,42 @@ const Journal = () => {
       return total;
     }, 0);
   }, [dataList]);
+
+  const totalProtein = useMemo(() => {
+    return dataList.reduce((total, item) => {
+      if (item.type === "header") {
+        return (
+          total +
+          item.logs.reduce((sum, log) => sum + parseFloat(log.protein), 0)
+        );
+      }
+      return total;
+    }, 0);
+  }, [dataList]);
+
+  useEffect(() => {
+    const saveCalorieData = async () => {
+      try {
+        await AsyncStorage.setItem("total_calories", totalCalories.toString());
+        await AsyncStorage.setItem("total_protein", totalProtein.toString());
+        await AsyncStorage.setItem(
+          "target_calories",
+          targetCalories.toString()
+        );
+        await AsyncStorage.setItem("target_protein", targetprotein.toString());
+      } catch (error) {
+        console.error("Error saving calorie data:", error);
+      }
+    };
+
+    if (totalCalories && targetCalories) {
+      saveCalorieData();
+    }
+  }, [totalCalories, targetCalories]);
+
+  const resaveNutrition = () => {
+    saveCalorieData();
+  };
 
   const generateDatesForMonth = (month) => {
     const startOfMonth = dayjs(month).startOf("month");

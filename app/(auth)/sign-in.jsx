@@ -23,6 +23,15 @@ const SIGN_IN = gql`
   }
 `;
 
+const GET_NUTRITION = gql`
+  query getRecommendedNutrition($user_id: Int!) {
+    getRecommendedNutrition(user_id: $user_id) {
+      recommended_calories
+      recommended_protein
+    }
+  }
+`;
+
 const SignIn = () => {
   const { setUserId } = useUser();
   const [form, setForm] = useState({
@@ -31,13 +40,32 @@ const SignIn = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [signInUser] = useLazyQuery(SIGN_IN);
+  const [fetchNutritionData] = useLazyQuery(GET_NUTRITION);
 
   useEffect(() => {
     const checkUserSession = async () => {
       try {
         const userId = await AsyncStorage.getItem("user_id");
+        const username = await AsyncStorage.getItem("username");
+
+        const isPersonalInfoComplete = await AsyncStorage.getItem(
+          "ispersonalinfocomplete"
+        );
+
+        console.log("Retrieved user_id SignIn:", userId);
+        console.log("Retrieved username SignIn:", username);
+        console.log(
+          "Retrieved ispersonalinfocomplete:",
+          isPersonalInfoComplete
+        );
+
         if (userId) {
-          router.replace("/(tabs)/home");
+          // Explicitly check for string values of "true" and "false"
+          if (isPersonalInfoComplete === "true") {
+            router.replace("/(tabs)/home");
+          } else {
+            router.replace("/personalInfo");
+          }
         }
       } catch (error) {
         console.error("Error checking user session:", error);
@@ -49,29 +77,60 @@ const SignIn = () => {
   const submit = async () => {
     setIsSubmitting(true);
     try {
+      // Perform sign-in
       const { data } = await signInUser({
         variables: { email: form.email, password: form.password },
       });
 
       if (data?.signIn) {
-        await AsyncStorage.setItem("user_id", String(data.signIn.user_id));
+        const { user_id, username, ispersonalinfocomplete } = data.signIn;
+
+        // Store user details in AsyncStorage
+        await AsyncStorage.setItem("user_id", String(user_id));
+        await AsyncStorage.setItem("username", username);
         await AsyncStorage.setItem(
           "ispersonalinfocomplete",
-          data.signIn.ispersonalinfocomplete.toString()
+          ispersonalinfocomplete.toString()
         );
 
-        setUserId(data.signIn.user_id);
+        setUserId(user_id);
+
+        // Fetch recommended nutrition data
+        const { data: nutritionData, error: nutritionError } =
+          await fetchNutritionData({
+            variables: { user_id },
+          });
+
+        if (nutritionError) {
+          console.error("Error fetching nutrition data:", nutritionError);
+        }
+
+        console.log("Nutrition Data Response:", nutritionData);
+
+        if (nutritionData?.getRecommendedNutrition) {
+          const nutritionItem = nutritionData.getRecommendedNutrition[0]; // Access the first item
+          const { recommended_calories, recommended_protein } = nutritionItem; // Destructure from the item
+        
+          // Store nutrition data in AsyncStorage
+          await AsyncStorage.setItem("target_calories", String(recommended_calories));
+          await AsyncStorage.setItem("target_protein", String(recommended_protein));
+        
+          // Log stored values for verification
+          const storedCalories = await AsyncStorage.getItem("target_calories");
+          const storedProtein = await AsyncStorage.getItem("target_protein");
+        
+          console.log("Stored target_calories:", storedCalories);
+          console.log("Stored target_protein:", storedProtein);
+        }
 
         setIsSubmitting(false);
 
-        setTimeout(() => {
-          if (!data.signIn.ispersonalinfocomplete) {
-            router.replace("/personalInfo");
-            //router.replace("/(tabs)/home");
-          } else {
-            router.replace("/(tabs)/home");
-          }
-        }, 100);
+        // Navigate based on personal info completion status
+        if (ispersonalinfocomplete) {
+          router.replace("/(tabs)/home");
+        } else {
+          router.replace("/personalInfo");
+        }
       } else {
         Alert.alert("Invalid email or password", "Please try again.");
         setIsSubmitting(false);

@@ -4,7 +4,6 @@ import {
   View,
   Image,
   Alert,
-  ActivityIndicator,
   StyleSheet,
 } from "react-native";
 import React, { useState } from "react";
@@ -50,7 +49,7 @@ const SignUp = () => {
     username: "",
     email: "",
     password: "",
-    confirmPassword: "", // Added confirmPassword field
+    confirmPassword: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isChecking, setIsChecking] = useState(false);

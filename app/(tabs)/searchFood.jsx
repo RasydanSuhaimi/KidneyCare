@@ -9,10 +9,10 @@ import {
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
-import FoodListItem from "../../components/FoodListItem";
-import SearchInput from "../../components/SearchInput";
+import FoodListItem from "../../components/searchFood/FoodListItem";
+import SearchInput from "../../components/searchFood/SearchInput";
 import { gql, useLazyQuery } from "@apollo/client";
-import LoadingIndicator from "../../components/LoadingIndicator"; // Import your LoadingIndicator component
+import LoadingIndicator from "../../components/LoadingIndicator"; 
 
 const query = gql`
   query search($ingr: String) {
