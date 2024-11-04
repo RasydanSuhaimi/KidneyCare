@@ -1,10 +1,10 @@
-import { View, StyleSheet, Button } from "react-native";
+import { View, StyleSheet, Button, Alert } from "react-native";
 import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native"; // Import useFocusEffect
-
+import { useApolloClient } from "@apollo/client";
 import Header from "../../components/Home/Header";
 import Progress from "../../components/Home/Progress";
 import Water from "../../components/Home/Water";
@@ -16,6 +16,7 @@ const Home = () => {
   const [targetCalories, setTargetCalories] = useState(2000);
   const [totalProtein, setTotalProtein] = useState(0);
   const [targetProtein, setTargetProtein] = useState(54);
+  const client = useApolloClient();
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -56,14 +57,38 @@ const Home = () => {
   );
 
   const handleLogout = async () => {
-    try {
-      await AsyncStorage.clear();
-      router.replace("/sign-in");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
+    Alert.alert("Confirm Logout", "Are you sure you want to log out?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        onPress: async () => {
+          try {
+            // Clear AsyncStorage
+            await AsyncStorage.clear();
 
+            // Clear Apollo Client cache
+            await client.clearStore();
+
+            Alert.alert("Success", "You have successfully logged out.", [
+              {
+                text: "OK",
+                onPress: () => router.replace("/sign-in"),
+              },
+            ]);
+          } catch (error) {
+            console.error("Logout failed:", error);
+            Alert.alert(
+              "Error",
+              "An error occurred while logging out. Please try again."
+            );
+          }
+        },
+      },
+    ]);
+  };
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.topContainer}>

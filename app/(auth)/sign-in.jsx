@@ -32,6 +32,15 @@ const GET_NUTRITION = gql`
   }
 `;
 
+const GET_TOTAL_NUTRITION = gql`
+  query getTotalNutritionByDate($user_id: Int!) {
+    getTotalNutritionByDate(user_id: $user_id) {
+      total_calories
+      total_protein
+    }
+  }
+`;
+
 const SignIn = () => {
   const { setUserId } = useUser();
   const [form, setForm] = useState({
@@ -41,26 +50,18 @@ const SignIn = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [signInUser] = useLazyQuery(SIGN_IN);
   const [fetchNutritionData] = useLazyQuery(GET_NUTRITION);
+  const [fetchTotalNutritionData] = useLazyQuery(GET_TOTAL_NUTRITION);
 
   useEffect(() => {
     const checkUserSession = async () => {
       try {
         const userId = await AsyncStorage.getItem("user_id");
-        const username = await AsyncStorage.getItem("username");
-
-        const isPersonalInfoComplete = await AsyncStorage.getItem(
-          "ispersonalinfocomplete"
-        );
-
-        console.log("Retrieved user_id SignIn:", userId);
-        console.log("Retrieved username SignIn:", username);
-        console.log(
-          "Retrieved ispersonalinfocomplete:",
-          isPersonalInfoComplete
-        );
 
         if (userId) {
-          // Explicitly check for string values of "true" and "false"
+          // Navigate based on the personal info completion status
+          const isPersonalInfoComplete = await AsyncStorage.getItem(
+            "ispersonalinfocomplete"
+          );
           if (isPersonalInfoComplete === "true") {
             router.replace("/(tabs)/home");
           } else {
@@ -108,29 +109,66 @@ const SignIn = () => {
         console.log("Nutrition Data Response:", nutritionData);
 
         if (nutritionData?.getRecommendedNutrition) {
-          const nutritionItem = nutritionData.getRecommendedNutrition[0]; // Access the first item
-          const { recommended_calories, recommended_protein } = nutritionItem; // Destructure from the item
-        
-          // Store nutrition data in AsyncStorage
-          await AsyncStorage.setItem("target_calories", String(recommended_calories));
-          await AsyncStorage.setItem("target_protein", String(recommended_protein));
-        
+          const nutritionItem = nutritionData.getRecommendedNutrition[0];
+          const { recommended_calories, recommended_protein } = nutritionItem;
+
+          // Store recommended nutrition data in AsyncStorage
+          await AsyncStorage.setItem(
+            "target_calories",
+            String(recommended_calories)
+          );
+          await AsyncStorage.setItem(
+            "target_protein",
+            String(recommended_protein)
+          );
+
           // Log stored values for verification
           const storedCalories = await AsyncStorage.getItem("target_calories");
           const storedProtein = await AsyncStorage.getItem("target_protein");
-        
+
           console.log("Stored target_calories:", storedCalories);
           console.log("Stored target_protein:", storedProtein);
         }
 
+        // Fetch total nutrition data
+        const { data: totalNutritionData, error: totalNutritionError } =
+          await fetchTotalNutritionData({
+            variables: { user_id },
+          });
+
+        if (totalNutritionError) {
+          console.error(
+            "Error fetching total nutrition data:",
+            totalNutritionError
+          );
+        } else if (totalNutritionData?.getTotalNutritionByDate) {
+          const { total_calories, total_protein } =
+            totalNutritionData.getTotalNutritionByDate;
+
+          // Store total nutrition data in AsyncStorage
+          await AsyncStorage.setItem("total_calories", String(total_calories));
+          await AsyncStorage.setItem("total_protein", String(total_protein));
+
+          // Log stored values for verification
+          const storedTotalCalories =
+            await AsyncStorage.getItem("total_calories");
+          const storedTotalProtein =
+            await AsyncStorage.getItem("total_protein");
+
+          console.log("Stored total_calories:", storedTotalCalories);
+          console.log("Stored total_protein:", storedTotalProtein);
+        }
+
         setIsSubmitting(false);
 
-        // Navigate based on personal info completion status
-        if (ispersonalinfocomplete) {
-          router.replace("/(tabs)/home");
-        } else {
-          router.replace("/personalInfo");
-        }
+        // Add a delay before navigating to the next screen
+        setTimeout(() => {
+          if (ispersonalinfocomplete) {
+            router.replace("/(tabs)/home");
+          } else {
+            router.replace("/personalInfo");
+          }
+        }, 100); // 2000 milliseconds (2 seconds) delay
       } else {
         Alert.alert("Invalid email or password", "Please try again.");
         setIsSubmitting(false);
@@ -144,6 +182,7 @@ const SignIn = () => {
       setIsSubmitting(false);
     }
   };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>

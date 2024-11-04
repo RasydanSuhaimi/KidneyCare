@@ -93,7 +93,7 @@ const CalorieProgress = ({
             </View>
             <Text
               style={styles.nutritionText}
-            >{`${remainingProtein}g left`}</Text>
+            >{`${totalProtein}/${targetProtein} g`}</Text>
           </View>
 
           <Text style={styles.nutritionLabel}>Phosphorus</Text>
@@ -113,7 +113,7 @@ const CalorieProgress = ({
             </View>
             <Text
               style={styles.nutritionText}
-            >{`${remainingProtein}mg left`}</Text>
+            >{`${totalProtein}/${targetProtein} mg`}</Text>
           </View>
 
           <Text style={styles.nutritionLabel}>Potassium</Text>
@@ -133,7 +133,7 @@ const CalorieProgress = ({
             </View>
             <Text
               style={styles.nutritionText}
-            >{`${remainingProtein}mg left`}</Text>
+            >{`${totalProtein}/${targetProtein} mg`}</Text>
           </View>
         </View>
       </View>
