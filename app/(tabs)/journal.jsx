@@ -206,42 +206,6 @@ const Journal = () => {
     }, 0);
   }, [dataList]);
 
-  const totalProtein = useMemo(() => {
-    return dataList.reduce((total, item) => {
-      if (item.type === "header") {
-        return (
-          total +
-          item.logs.reduce((sum, log) => sum + parseFloat(log.protein), 0)
-        );
-      }
-      return total;
-    }, 0);
-  }, [dataList]);
-
-  useEffect(() => {
-    const saveCalorieData = async () => {
-      try {
-        await AsyncStorage.setItem("total_calories", totalCalories.toString());
-        await AsyncStorage.setItem("total_protein", totalProtein.toString());
-        await AsyncStorage.setItem(
-          "target_calories",
-          targetCalories.toString()
-        );
-        await AsyncStorage.setItem("target_protein", targetprotein.toString());
-      } catch (error) {
-        console.error("Error saving calorie data:", error);
-      }
-    };
-
-    if (totalCalories && targetCalories) {
-      saveCalorieData();
-    }
-  }, [totalCalories, targetCalories]);
-
-  const resaveNutrition = () => {
-    saveCalorieData();
-  };
-
   const generateDatesForMonth = (month) => {
     const startOfMonth = dayjs(month).startOf("month");
     const endOfMonth = dayjs(month).endOf("month");

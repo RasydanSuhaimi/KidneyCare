@@ -70,7 +70,7 @@ export default function App() {
           source={require("../assets/animations/kidneyGreen.json")}
           style={[styles.cards, { width: lottieSize, height: lottieSize }]}
           autoPlay
-          loop={false}
+          loop ={false}
         />
         {showContinueButton && (
           <View style={styles.welcomeContainer}>

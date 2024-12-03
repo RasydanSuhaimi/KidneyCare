@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StatusBar } from "expo-status-bar";
-import { Text, View, Image, Alert, ActivityIndicator } from "react-native";
+import { Text, View, Image, Alert } from "react-native";
 import React, { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, router } from "expo-router";
@@ -23,24 +23,6 @@ const SIGN_IN = gql`
   }
 `;
 
-const GET_NUTRITION = gql`
-  query getRecommendedNutrition($user_id: Int!) {
-    getRecommendedNutrition(user_id: $user_id) {
-      recommended_calories
-      recommended_protein
-    }
-  }
-`;
-
-const GET_TOTAL_NUTRITION = gql`
-  query getTotalNutritionByDate($user_id: Int!) {
-    getTotalNutritionByDate(user_id: $user_id) {
-      total_calories
-      total_protein
-    }
-  }
-`;
-
 const SignIn = () => {
   const { setUserId } = useUser();
   const [form, setForm] = useState({
@@ -49,8 +31,6 @@ const SignIn = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [signInUser] = useLazyQuery(SIGN_IN);
-  const [fetchNutritionData] = useLazyQuery(GET_NUTRITION);
-  const [fetchTotalNutritionData] = useLazyQuery(GET_TOTAL_NUTRITION);
 
   useEffect(() => {
     const checkUserSession = async () => {
@@ -58,7 +38,6 @@ const SignIn = () => {
         const userId = await AsyncStorage.getItem("user_id");
 
         if (userId) {
-          // Navigate based on the personal info completion status
           const isPersonalInfoComplete = await AsyncStorage.getItem(
             "ispersonalinfocomplete"
           );
@@ -78,7 +57,6 @@ const SignIn = () => {
   const submit = async () => {
     setIsSubmitting(true);
     try {
-      // Perform sign-in
       const { data } = await signInUser({
         variables: { email: form.email, password: form.password },
       });
@@ -86,7 +64,6 @@ const SignIn = () => {
       if (data?.signIn) {
         const { user_id, username, ispersonalinfocomplete } = data.signIn;
 
-        // Store user details in AsyncStorage
         await AsyncStorage.setItem("user_id", String(user_id));
         await AsyncStorage.setItem("username", username);
         await AsyncStorage.setItem(
@@ -95,80 +72,15 @@ const SignIn = () => {
         );
 
         setUserId(user_id);
-
-        // Fetch recommended nutrition data
-        const { data: nutritionData, error: nutritionError } =
-          await fetchNutritionData({
-            variables: { user_id },
-          });
-
-        if (nutritionError) {
-          console.error("Error fetching nutrition data:", nutritionError);
-        }
-
-        console.log("Nutrition Data Response:", nutritionData);
-
-        if (nutritionData?.getRecommendedNutrition) {
-          const nutritionItem = nutritionData.getRecommendedNutrition[0];
-          const { recommended_calories, recommended_protein } = nutritionItem;
-
-          // Store recommended nutrition data in AsyncStorage
-          await AsyncStorage.setItem(
-            "target_calories",
-            String(recommended_calories)
-          );
-          await AsyncStorage.setItem(
-            "target_protein",
-            String(recommended_protein)
-          );
-
-          // Log stored values for verification
-          const storedCalories = await AsyncStorage.getItem("target_calories");
-          const storedProtein = await AsyncStorage.getItem("target_protein");
-
-          console.log("Stored target_calories:", storedCalories);
-          console.log("Stored target_protein:", storedProtein);
-        }
-
-        // Fetch total nutrition data
-        const { data: totalNutritionData, error: totalNutritionError } =
-          await fetchTotalNutritionData({
-            variables: { user_id },
-          });
-
-        if (totalNutritionError) {
-          console.error(
-            "Error fetching total nutrition data:",
-            totalNutritionError
-          );
-        } else if (totalNutritionData?.getTotalNutritionByDate) {
-          const { total_calories, total_protein } =
-            totalNutritionData.getTotalNutritionByDate;
-
-          // Store total nutrition data in AsyncStorage
-          await AsyncStorage.setItem("total_calories", String(total_calories));
-          await AsyncStorage.setItem("total_protein", String(total_protein));
-
-          // Log stored values for verification
-          const storedTotalCalories =
-            await AsyncStorage.getItem("total_calories");
-          const storedTotalProtein =
-            await AsyncStorage.getItem("total_protein");
-
-          console.log("Stored total_calories:", storedTotalCalories);
-          console.log("Stored total_protein:", storedTotalProtein);
-        }
-
         setIsSubmitting(false);
 
-        // Add a delay before navigating to the next screen
         setTimeout(() => {
           if (ispersonalinfocomplete) {
             router.replace("/(tabs)/home");
           } else {
             router.replace("/personalInfo");
           }
-        }, 100); // 2000 milliseconds (2 seconds) delay
+        }, 100);
       } else {
         Alert.alert("Invalid email or password", "Please try again.");
         setIsSubmitting(false);

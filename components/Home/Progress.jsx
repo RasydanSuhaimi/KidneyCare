@@ -1,3 +1,4 @@
+import { Skeleton } from "moti/skeleton";
 import React, { useRef, useEffect } from "react";
 import { View, Text, Animated, StyleSheet } from "react-native";
 import Svg, { Circle } from "react-native-svg";
@@ -10,6 +11,8 @@ const CalorieProgress = ({
   totalProtein,
   targetProtein,
 }) => {
+  const formattedRemainingProtein = (targetProtein - totalProtein).toFixed(2);
+
   const calorieProgress = totalCalories / targetCalories;
   const proteinProgress = totalProtein / targetProtein;
   const size = 150;
@@ -43,7 +46,7 @@ const CalorieProgress = ({
 
   // Calculate remaining calories
   const remainingCalories = targetCalories - totalCalories;
-  const remainingProtein = targetProtein - totalProtein;
+  //const remainingProtein = targetProtein - totalProtein;
 
   return (
     <View style={styles.container}>
@@ -93,7 +96,7 @@ const CalorieProgress = ({
             </View>
             <Text
               style={styles.nutritionText}
-            >{`${totalProtein}/${targetProtein} g`}</Text>
+            >{`${formattedRemainingProtein} g left`}</Text>
           </View>
 
           <Text style={styles.nutritionLabel}>Phosphorus</Text>
@@ -113,10 +116,9 @@ const CalorieProgress = ({
             </View>
             <Text
               style={styles.nutritionText}
-            >{`${totalProtein}/${targetProtein} mg`}</Text>
+            >{`${formattedRemainingProtein} mg left`}</Text>
           </View>
-
-          <Text style={styles.nutritionLabel}>Potassium</Text>
+            <Text style={styles.nutritionLabel}>Potassium</Text>
           <View style={styles.progressBarRow}>
             <View style={styles.progressBarContainer}>
               <Animated.View
@@ -133,7 +135,7 @@ const CalorieProgress = ({
             </View>
             <Text
               style={styles.nutritionText}
-            >{`${totalProtein}/${targetProtein} mg`}</Text>
+            >{`${formattedRemainingProtein} mg left`}</Text>
           </View>
         </View>
       </View>
@@ -182,7 +184,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "flex-start",
     justifyContent: "center",
-    paddingLeft: 20,
+    marginLeft: 20,
   },
   nutritionLabel: {
     color: "white",
@@ -192,6 +194,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 10,
+    marginRight: 40,
   },
   progressBarContainer: {
     height: 10,

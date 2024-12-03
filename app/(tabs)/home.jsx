@@ -1,60 +1,106 @@
-import { View, StyleSheet, Button, Alert } from "react-native";
+import { View, StyleSheet,Button, Text,Alert, TouchableOpacity } from "react-native";
 import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import { useFocusEffect } from "@react-navigation/native"; // Import useFocusEffect
-import { useApolloClient } from "@apollo/client";
+import { useFocusEffect } from "@react-navigation/native";
+import { useApolloClient, useQuery, gql } from "@apollo/client";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Header from "../../components/Home/Header";
 import Progress from "../../components/Home/Progress";
-import Water from "../../components/Home/Water";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+
+const GET_TOTAL_NUTRITION = gql`
+  query getTotalNutritionByDate($user_id: Int!) {
+    getTotalNutritionByDate(user_id: $user_id) {
+      total_calories
+      total_protein
+    }
+  }
+`;
+
+const GET_NUTRITION = gql`
+  query getRecommendedNutrition($user_id: Int!) {
+    getRecommendedNutrition(user_id: $user_id) {
+      recommended_calories
+      recommended_protein
+    }
+  }
+`;
 
 const Home = () => {
   const router = useRouter();
   const [userId, setUserId] = useState(null);
-  const [totalCalories, setTotalCalories] = useState(0);
-  const [targetCalories, setTargetCalories] = useState(2000);
-  const [totalProtein, setTotalProtein] = useState(0);
-  const [targetProtein, setTargetProtein] = useState(54);
   const client = useApolloClient();
+  const [totalCalories, setTotalCalories] = useState(0);
+  const [totalProtein, setTotalProtein] = useState(0);
+  const [targetCalories, setTargetCalories] = useState(2000);
+  const [targetProtein, setTargetProtein] = useState(54);
 
   useEffect(() => {
     const fetchUserId = async () => {
       const id = await AsyncStorage.getItem("user_id");
       if (id) {
-        setUserId(id);
+        setUserId(parseInt(id));
       }
     };
 
     fetchUserId();
   }, []);
 
-  const fetchCalories = async () => {
-    try {
-      const storedTotalCalories =
-        parseInt(await AsyncStorage.getItem("total_calories")) || 0;
-      const storedTargetCalories =
-        parseInt(await AsyncStorage.getItem("target_calories")) || 2000;
-      const storedTotalProtein =
-        parseInt(await AsyncStorage.getItem("total_protein")) || 0;
-      const storedTargetProtein =
-        parseInt(await AsyncStorage.getItem("target_protein")) || 54;
-
-      setTotalCalories(storedTotalCalories);
-      setTargetCalories(storedTargetCalories);
-      setTotalProtein(storedTotalProtein);
-      setTargetProtein(storedTargetProtein);
-    } catch (error) {
-      console.error("Failed to fetch calories:", error);
+  // Fetch total nutrition values
+  const { data: totalNutritionData, refetch: refetchTotalNutrition } = useQuery(
+    GET_TOTAL_NUTRITION,
+    {
+      variables: { user_id: userId },
+      skip: !userId,
     }
-  };
+  );
 
-  // Use useFocusEffect to refetch calories when the component is focused
+  // Fetch recommended nutrition values
+  const {
+    data: recommendedNutritionData,
+    refetch: refetchRecommendedNutrition,
+  } = useQuery(GET_NUTRITION, {
+    variables: { user_id: userId },
+    skip: !userId,
+  });
+
   useFocusEffect(
     React.useCallback(() => {
-      fetchCalories();
-    }, [])
+      if (userId) {
+        refetchTotalNutrition();
+        refetchRecommendedNutrition();
+      }
+    }, [userId])
   );
+
+  useEffect(() => {
+    if (totalNutritionData) {
+      setTotalCalories(
+        totalNutritionData.getTotalNutritionByDate?.total_calories || 0
+      );
+      setTotalProtein(
+        totalNutritionData.getTotalNutritionByDate?.total_protein || 0
+      );
+    }
+  }, [totalNutritionData]);
+
+  useEffect(() => {
+    if (recommendedNutritionData) {
+      setTargetCalories(
+        recommendedNutritionData.getRecommendedNutrition[0]
+          ?.recommended_calories || 2000
+      );
+      setTargetProtein(
+        recommendedNutritionData.getRecommendedNutrition[0]
+          ?.recommended_protein || 54
+      );
+    }
+  }, [recommendedNutritionData]);
+
+  const handleWaterPress = () => {
+    router.push("./Water");
+  };
 
   const handleLogout = async () => {
     Alert.alert("Confirm Logout", "Are you sure you want to log out?", [
@@ -89,6 +135,7 @@ const Home = () => {
       },
     ]);
   };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.topContainer}>
@@ -101,7 +148,26 @@ const Home = () => {
         />
       </View>
       <View style={styles.bottomContainer}>
-        <Water />
+        <View style={styles.insideContainer}>
+          <View style={styles.waterContainer}>
+            <TouchableOpacity
+              onPress={handleWaterPress}
+              style={styles.waterButton}
+            >
+              <View style={styles.waterContent}>
+                <Text style={styles.waterText}>Water</Text>
+              </View>
+              <View style={styles.remainingWaterContent}>
+                <FontAwesome6 name="glass-water" size={24} color="white" />
+                <Text style={styles.remainingWaterText}>2000 ml left</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.sodiumContainer}>
+            <Text>sodium</Text>
+          </View>
+        </View>
+
         <View style={styles.logoutContainer}>
           <Button title="Logout" onPress={handleLogout} />
         </View>
@@ -129,6 +195,63 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 30,
     borderTopLeftRadius: 30,
   },
+
+  insideContainer: {
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexDirection: "row",
+    marginTop: 10,
+  },
+
+  waterContainer: {
+    height: 110,
+    width: 180,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#70AFF1",
+    padding: 20,
+    borderRadius: 25,
+  },
+
+  waterButton: {
+    flexDirection: "column",
+    alignItems: "center",
+  },
+
+  waterContent: {
+    alignItems: "center",
+  },
+
+  waterText: {
+    marginBottom: 5,
+    fontSize: 16,
+    fontWeight: "600",
+    color: "white",
+  },
+
+  remainingWaterContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+  },
+
+  remainingWaterText: {
+    marginLeft: 8,
+    fontSize: 15,
+    fontWeight: "600",
+    color: "white",
+  },
+
+  sodiumContainer: {
+    height: 110,
+    width: 180,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#EB89CF",
+    padding: 20,
+    borderRadius: 25,
+  },
+
   logoutContainer: {
     padding: 10,
     backgroundColor: "#f8f8fa",
