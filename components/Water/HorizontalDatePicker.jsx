@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import {
   FlatList,
   TouchableOpacity,
@@ -8,16 +8,14 @@ import {
 } from "react-native";
 
 const HorizontalDatePicker = ({ dateList, selectedDate, setSelectedDate }) => {
-  // Create a ref for the FlatList
   const flatListRef = useRef(null);
 
   // Function to scroll to the selected index
-  const handleDateSelect = (item, index) => {
+  const handleDateSelect = useCallback((item, index) => {
     setSelectedDate(item.fullDate);
 
-    // Scroll to the selected index
     flatListRef.current.scrollToIndex({ index, animated: true });
-  };
+  }, [setSelectedDate]);
 
   useEffect(() => {
     const selectedIndex = dateList.findIndex(
@@ -25,7 +23,7 @@ const HorizontalDatePicker = ({ dateList, selectedDate, setSelectedDate }) => {
     );
 
     if (selectedIndex !== -1) {
-      const centerIndex = selectedIndex - Math.floor(2);
+      const centerIndex = selectedIndex - Math.floor(2); // Allow this to be configurable
       flatListRef.current.scrollToIndex({
         index: centerIndex >= 0 ? centerIndex : 0,
         animated: true,
@@ -55,6 +53,8 @@ const HorizontalDatePicker = ({ dateList, selectedDate, setSelectedDate }) => {
                 height: itemHeight,
               },
             ]}
+            accessibilityLabel={`Select date ${item.displayDate}, ${item.day}`}
+            accessible
           >
             <Text
               style={[

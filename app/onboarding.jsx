@@ -139,14 +139,14 @@ const styles = StyleSheet.create({
     marginRight: 15,
     width: 100,
     backgroundColor: "#3AAFA9",
-    borderRadius: "100%",
+    borderRadius: 100,
   },
   skipButton: {
     padding: 20,
     marginLeft: 15,
     width: 100,
     backgroundColor: "#FF6B6B",
-    borderRadius: "100%",
+    borderRadius: 100,
   },
   skipText: {
     fontWeight: "600",

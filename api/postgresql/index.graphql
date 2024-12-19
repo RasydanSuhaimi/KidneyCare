@@ -53,6 +53,14 @@ type Nutrition {
   updated_at: DateTime
 }
 
+type Water_log {
+  id: Int
+  user_id: Int!
+  water_volume: Float!
+  date_log: DateTime
+}
+
+
 type UserResponse {
   user_id: Int
   ispersonalinfocomplete: Boolean
@@ -65,6 +73,7 @@ type Mutation {
 type TotalNutrition {
   total_calories: Float
   total_protein: Float
+  total_water: Float
 }
 
 """
@@ -149,7 +158,7 @@ type Query {
       type: "postgresql"
       schema: "public"
       query: """
-      SELECT n.recommended_calories, n.recommended_protein, n.personal_info_id
+      SELECT n.recommended_calories, n.recommended_protein,  n.recommended_water, n.personal_info_id
       FROM nutrition n
       JOIN personal_info p ON n.personal_info_id = p.id
       WHERE p.user_id = $1
@@ -169,7 +178,45 @@ type Query {
       """
       configuration: "postgresql_config"
     )
+  
+  getTotalWaterByDate(user_id: Int!): TotalNutrition
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      query: """
+      SELECT SUM(water_volume) AS total_water
+      FROM water_log
+      WHERE user_id = $1
+      AND DATE(date_log) = CURRENT_DATE
+      """
+      configuration: "postgresql_config"
+    )
+    getRecommendedWater(user_id: Int!): [Nutrition]
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      query: """
+      SELECT n.recommended_water, n.personal_info_id
+      FROM nutrition n
+      JOIN personal_info p ON n.personal_info_id = p.id
+      WHERE p.user_id = $1
+      """
+      configuration: "postgresql_config"
+    )
+
+    getWaterVolumeBByDate(user_id: Int!, date_log: DateTime!): [Water_log]
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      query: """
+      SELECT water_volume, id, date_log
+      FROM water_log
+      WHERE user_id = $1 AND DATE(date_log) = $2
+      """
+      configuration: "postgresql_config"
+    )
 }
+
 
 """
 The following mutations are just a set of examples of how to access your schema.
@@ -261,6 +308,19 @@ type Mutation {
       configuration: "postgresql_config"
     )
 
+    AddWaterIntake(
+    user_id: Int!
+    water_volume: Float!
+    date_log: DateTime
+  ): Water_log
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "water_log"
+      dml: INSERT
+      configuration: "postgresql_config"
+    )
+
   updatePersonalInfoComplete(user_id: Int!): Users
     @dbquery(
       type: "postgresql"
@@ -271,6 +331,15 @@ type Mutation {
       WHERE user_id = $1
       RETURNING user_id, ispersonalinfocomplete;
       """
+      configuration: "postgresql_config"
+    )
+
+    deleteWater_log(id: Int!): Water_log
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "water_log"
+      dml: DELETE
       configuration: "postgresql_config"
     )
 }

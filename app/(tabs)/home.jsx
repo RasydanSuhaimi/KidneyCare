@@ -1,4 +1,4 @@
-import { View, StyleSheet,Button, Text,Alert, TouchableOpacity } from "react-native";
+import { View, StyleSheet, Button, Text, Alert, TouchableOpacity } from "react-native";
 import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -23,6 +23,15 @@ const GET_NUTRITION = gql`
     getRecommendedNutrition(user_id: $user_id) {
       recommended_calories
       recommended_protein
+      recommended_water
+    }
+  }
+`;
+
+const GET_TOTAL_WATER = gql`
+  query getTotalWaterByDate($user_id: Int!) {
+    getTotalWaterByDate(user_id: $user_id) {
+      total_water
     }
   }
 `;
@@ -33,8 +42,11 @@ const Home = () => {
   const client = useApolloClient();
   const [totalCalories, setTotalCalories] = useState(0);
   const [totalProtein, setTotalProtein] = useState(0);
+  const [totalWater, setTotalWater] = useState(0);
+
   const [targetCalories, setTargetCalories] = useState(2000);
   const [targetProtein, setTargetProtein] = useState(54);
+  const [remainingWater, setRemainingWater] = useState(1000); // target water value
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -47,22 +59,28 @@ const Home = () => {
     fetchUserId();
   }, []);
 
-  // Fetch total nutrition values
+  // Fetch total nutrition values (calories and protein)
   const { data: totalNutritionData, refetch: refetchTotalNutrition } = useQuery(
     GET_TOTAL_NUTRITION,
     {
       variables: { user_id: userId },
-      skip: !userId,
+      skip: !userId, // Skip if no userId is available
     }
   );
 
-  // Fetch recommended nutrition values
-  const {
-    data: recommendedNutritionData,
-    refetch: refetchRecommendedNutrition,
-  } = useQuery(GET_NUTRITION, {
+  // Fetch recommended nutrition values (target calories and protein)
+  const { data: recommendedNutritionData, refetch: refetchRecommendedNutrition } = useQuery(
+    GET_NUTRITION,
+    {
+      variables: { user_id: userId },
+      skip: !userId, // Skip if no userId is available
+    }
+  );
+
+  // Fetch total water consumed
+  const { data: totalWaterData,  refetch: refetchTotalWater } = useQuery(GET_TOTAL_WATER, {
     variables: { user_id: userId },
-    skip: !userId,
+    skip: !userId, // Skip if no userId is available
   });
 
   useFocusEffect(
@@ -70,6 +88,7 @@ const Home = () => {
       if (userId) {
         refetchTotalNutrition();
         refetchRecommendedNutrition();
+        refetchTotalWater();
       }
     }, [userId])
   );
@@ -87,6 +106,7 @@ const Home = () => {
 
   useEffect(() => {
     if (recommendedNutritionData) {
+      console.log("Recommended Nutrition Data:", recommendedNutritionData);
       setTargetCalories(
         recommendedNutritionData.getRecommendedNutrition[0]
           ?.recommended_calories || 2000
@@ -98,8 +118,26 @@ const Home = () => {
     }
   }, [recommendedNutritionData]);
 
+  useEffect(() => {
+    console.log("totalWaterData:", totalWaterData);
+    console.log("recommendedNutritionData:", recommendedNutritionData);
+  
+    if (totalWaterData && recommendedNutritionData) {
+      const totalWaterConsumed =
+        totalWaterData.getTotalWaterByDate?.total_water || 0;
+      const targetWater =
+        recommendedNutritionData.getRecommendedNutrition[0]?.recommended_water || 1000;
+  
+      console.log("Total Water Consumed:", totalWaterConsumed);
+      console.log("Target Water:", targetWater);
+  
+      setRemainingWater(targetWater - totalWaterConsumed);
+    }
+  }, [totalWaterData, recommendedNutritionData]);
+  
+
   const handleWaterPress = () => {
-    router.push("./Water");
+    router.push("Water");
   };
 
   const handleLogout = async () => {
@@ -159,7 +197,9 @@ const Home = () => {
               </View>
               <View style={styles.remainingWaterContent}>
                 <FontAwesome6 name="glass-water" size={24} color="white" />
-                <Text style={styles.remainingWaterText}>2000 ml left</Text>
+                <Text style={styles.remainingWaterText}>
+                  {remainingWater} ml left
+                </Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -195,14 +235,12 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 30,
     borderTopLeftRadius: 30,
   },
-
   insideContainer: {
     alignItems: "center",
     justifyContent: "space-between",
     flexDirection: "row",
     marginTop: 10,
   },
-
   waterContainer: {
     height: 110,
     width: 180,
@@ -212,36 +250,30 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 25,
   },
-
   waterButton: {
     flexDirection: "column",
     alignItems: "center",
   },
-
   waterContent: {
     alignItems: "center",
   },
-
   waterText: {
     marginBottom: 5,
     fontSize: 16,
     fontWeight: "600",
     color: "white",
   },
-
   remainingWaterContent: {
     flexDirection: "row",
     alignItems: "center",
     marginTop: 10,
   },
-
   remainingWaterText: {
     marginLeft: 8,
     fontSize: 15,
     fontWeight: "600",
     color: "white",
   },
-
   sodiumContainer: {
     height: 110,
     width: 180,
@@ -251,7 +283,6 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 25,
   },
-
   logoutContainer: {
     padding: 10,
     backgroundColor: "#f8f8fa",
