@@ -60,7 +60,6 @@ type Water_log {
   date_log: DateTime
 }
 
-
 type UserResponse {
   user_id: Int
   ispersonalinfocomplete: Boolean
@@ -178,7 +177,7 @@ type Query {
       """
       configuration: "postgresql_config"
     )
-  
+
   getTotalWaterByDate(user_id: Int!): TotalNutrition
     @dbquery(
       type: "postgresql"
@@ -191,7 +190,7 @@ type Query {
       """
       configuration: "postgresql_config"
     )
-    getRecommendedWater(user_id: Int!): [Nutrition]
+  getRecommendedWater(user_id: Int!): [Nutrition]
     @dbquery(
       type: "postgresql"
       schema: "public"
@@ -204,7 +203,7 @@ type Query {
       configuration: "postgresql_config"
     )
 
-    getWaterVolumeBByDate(user_id: Int!, date_log: DateTime!): [Water_log]
+  getWaterVolumeBByDate(user_id: Int!, date_log: DateTime!): [Water_log]
     @dbquery(
       type: "postgresql"
       schema: "public"
@@ -215,8 +214,54 @@ type Query {
       """
       configuration: "postgresql_config"
     )
-}
+  GetWeeklyNutrients(user_id: Int!): [Food_log]
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      query: """
+      SELECT created_at, kcal
+      FROM food_log
+      WHERE user_id = $1
+      """
+      configuration: "postgresql_config"
+    )
 
+  GetMonthlyNutrients(user_id: Int!): [Food_log]
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      query: """
+      SELECT created_at, kcal
+      FROM food_log
+      WHERE user_id = $1
+      """
+      configuration: "postgresql_config"
+    )
+
+  GetWeeklyWater(user_id: Int!): [Water_log]
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      query: """
+      SELECT date_log, water_volume
+      FROM water_log
+      WHERE user_id = $1
+      """
+      configuration: "postgresql_config"
+    )
+
+  GetMonthlyWater(user_id: Int!): [Water_log]
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      query: """
+      SELECT date_log, water_volume
+      FROM water_log
+      WHERE user_id = $1
+      """
+      configuration: "postgresql_config"
+    )
+}
 
 """
 The following mutations are just a set of examples of how to access your schema.
@@ -308,7 +353,7 @@ type Mutation {
       configuration: "postgresql_config"
     )
 
-    AddWaterIntake(
+  AddWaterIntake(
     user_id: Int!
     water_volume: Float!
     date_log: DateTime
@@ -334,7 +379,7 @@ type Mutation {
       configuration: "postgresql_config"
     )
 
-    deleteWater_log(id: Int!): Water_log
+  deleteWater_log(id: Int!): Water_log
     @dbquery(
       type: "postgresql"
       schema: "public"

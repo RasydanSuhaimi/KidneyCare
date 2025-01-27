@@ -156,7 +156,7 @@ const SignUp = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <Image source={images.logo} resizeMode="contain" style={styles.logo} />
+        {/* <Image source={images.logo} resizeMode="contain" style={styles.logo} /> */}
 
         <Text style={styles.title}>Sign up to KidneyCare</Text>
 

@@ -98,7 +98,7 @@ const SignIn = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Image source={images.logo} resizeMode="contain" style={styles.logo} />
+        {/* <Image source={images.logo} resizeMode="contain" style={styles.logo} /> */}
 
         <Text style={styles.title}>Log in to KidneyCare</Text>
 

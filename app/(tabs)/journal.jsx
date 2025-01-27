@@ -321,9 +321,7 @@ const Journal = () => {
           }
         />
       </View>
-
       <LoadingIndicator visible={loadingModalVisible} />
-      <StatusBar backgroundColor="#161622" style="light" />
     </SafeAreaView>
   );
 };

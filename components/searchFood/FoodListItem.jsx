@@ -1,16 +1,17 @@
 import { View, Text, StyleSheet } from "react-native";
 import PropTypes from "prop-types";
 
-const FoodListItem = ({ item }) => {
+const FoodListItem = ({ item, selectedNutrient }) => {
+  const nutrientValue = item.food.nutrients[selectedNutrient]?.toFixed(2) || 0;
+
   return (
-    <View
-      style={styles.container}
-      accessibilityLabel={`${item.food.label} - ${item.food.nutrients.ENERC_KCAL} calories`}
-    >
+    <View style={styles.container}>
       <View style={styles.content}>
         <Text style={styles.label}>{item.food.label}</Text>
-        <Text style={styles.calories}>
-          {item.food.nutrients.ENERC_KCAL} cal{" "}
+        <Text style={styles.nutrient}>
+          {selectedNutrient === "ENERC_KCAL"
+            ? `${nutrientValue} cal`
+            : `${nutrientValue} g`}
         </Text>
       </View>
     </View>
@@ -39,7 +40,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#333",
   },
-  calories: {
+  nutrient: {
     fontSize: 14,
     color: "#777",
     marginTop: 10,
@@ -50,11 +51,10 @@ FoodListItem.propTypes = {
   item: PropTypes.shape({
     food: PropTypes.shape({
       label: PropTypes.string.isRequired,
-      nutrients: PropTypes.shape({
-        ENERC_KCAL: PropTypes.number.isRequired,
-      }).isRequired,
+      nutrients: PropTypes.object.isRequired,
     }).isRequired,
   }).isRequired,
+  selectedNutrient: PropTypes.string.isRequired,
 };
 
 export default FoodListItem;

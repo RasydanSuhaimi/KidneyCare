@@ -67,17 +67,18 @@ const TabsLayout = () => {
       color: "#3AAFA9",
     },
     {
-      name: "recommendedFood",
-      iconSet: "AntDesign",
-      iconName: "heart",
-      title: "Picks",
-    },
-    {
       name: "insight",
       iconSet: "Entypo",
       iconName: "bar-graph",
       title: "Insight",
     },
+    {
+      name: "recommendedFood",
+      iconSet: "AntDesign",
+      iconName: "heart",
+      title: "Info",
+    },
+   
   ];
 
   return (

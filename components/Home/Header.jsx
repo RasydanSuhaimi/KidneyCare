@@ -1,10 +1,12 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import React, { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { useNavigation } from '@react-navigation/native';  // Import useNavigation
 
 const Header = () => {
   const [username, setUsername] = useState("Guest"); // Default to "Guest" if not available
+  const navigation = useNavigation(); // Get navigation object
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -20,14 +22,19 @@ const Header = () => {
     fetchUserInfo();
   }, []);
 
+  const handleProfilePress = () => {
+    // Navigate to the profile page
+    navigation.navigate("profile");  // "Profile" should match the name of the profile screen in your navigator
+  };
+
   return (
     <View style={styles.header}>
       <View>
         <Text style={styles.usernameText}>Hello, {username}</Text>
       </View>
-      <View style={styles.iconCircle}>
-      <FontAwesome name="user" size={25} color="#3AAFA9" />
-      </View>
+      <TouchableOpacity style={styles.iconCircle} onPress={handleProfilePress}>
+        <FontAwesome name="user" size={25} color="#3AAFA9" />
+      </TouchableOpacity>
     </View>
   );
 };
